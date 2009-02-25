@@ -33,11 +33,11 @@ use Error qw( :try );
 
 Password manager that uses HTTPD::UserAdmin to manage users and passwords.
 
-Subclass of [[WikiUsersPasswordDotPm][ =TWiki::Users::Password= ]].
+Subclass of =[[%SCRIPTURL{view}%/%SYSTEMWEB%/PerlDoc?module=Foswiki::Users::Password][Foswiki::Users::Password]]=.
 See documentation of that class for descriptions of the methods of this class.
 
 Duplicates functionality of
-[[WikiUsersHtPasswdUserDotPm][ =TWiki::Users::HtPasswdUser=]];
+=[[%SCRIPTURL{view}%/%SYSTEMWEB%/PerlDoc?module=Foswiki::Users::HtPasswdUser][Foswiki::Users::HtPasswdUser]]=;
 and Adds the possiblilty of using DBM files, and databases to store the user information.
 
 see http://search.cpan.org/~lds/HTTPD-User-Manage-1.66/lib/HTTPD/UserAdmin.pm
