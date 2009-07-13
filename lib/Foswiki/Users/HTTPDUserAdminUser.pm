@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2007 SvenDowideit@home.org.au
 # All Rights Reserved. 
-# TWiki Contributors are listed in the AUTHORS file in the root of 
+# Foswiki Contributors are listed in the AUTHORS file in the root of 
 # this distribution. NOTE: Please extend that file, not this notice.
 #
 # This program is free software; you can redistribute it and/or
@@ -17,19 +17,19 @@
 #
 # As per the GPL, removal of this notice is prohibited.
 
-package TWiki::Users::HTTPDUserAdminUser;
-use base 'TWiki::Users::Password';
+package Foswiki::Users::HTTPDUserAdminUser;
+use base 'Foswiki::Users::Password';
 
 use HTTPD::UserAdmin ();
 use HTTPD::Authen ();
 use Assert;
 use strict;
-use TWiki::Users::Password;
+use Foswiki::Users::Password;
 use Error qw( :try );
 
 =pod
 
----+ package TWiki::Users::HTTPDUserAdminUser
+---+ package Foswiki::Users::HTTPDUserAdminUser
 
 Password manager that uses HTTPD::UserAdmin to manage users and passwords.
 
@@ -50,23 +50,23 @@ sub new {
     my $this = $class->SUPER::new( $session );
 
 	my %configuration =  (
-			DBType =>					$TWiki::cfg{HTTPDUserAdminContrib}{DBType} || 'Text',
-			Host =>						$TWiki::cfg{HTTPDUserAdminContrib}{Host} || '',
-			Port =>						$TWiki::cfg{HTTPDUserAdminContrib}{Port} || '',
-			DB =>						$TWiki::cfg{HTTPDUserAdminContrib}{DB} || $TWiki::cfg{Htpasswd}{FileName},
+			DBType =>					$Foswiki::cfg{HTTPDUserAdminContrib}{DBType} || 'Text',
+			Host =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Host} || '',
+			Port =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Port} || '',
+			DB =>						$Foswiki::cfg{HTTPDUserAdminContrib}{DB} || $Foswiki::cfg{Htpasswd}{FileName},
 			#uncommenting User seems to crash when using Text DBType :(
-			#User =>						$TWiki::cfg{HTTPDUserAdminContrib}{User},
-			Auth =>						$TWiki::cfg{HTTPDUserAdminContrib}{Auth} || '',
-			Encrypt =>					$TWiki::cfg{HTTPDUserAdminContrib}{Encrypt} || 'crypt',
-			Locking =>					$TWiki::cfg{HTTPDUserAdminContrib}{Locking} || '',
-			Path =>						$TWiki::cfg{HTTPDUserAdminContrib}{Path} || '',
-			Debug =>					$TWiki::cfg{HTTPDUserAdminContrib}{Debug},
-			Flags =>					$TWiki::cfg{HTTPDUserAdminContrib}{Flags} || '',
-			Driver =>					$TWiki::cfg{HTTPDUserAdminContrib}{Driver} || '',
-			Server =>					$TWiki::cfg{HTTPDUserAdminContrib}{Server},	#undef == go detect
-			UserTable =>				$TWiki::cfg{HTTPDUserAdminContrib}{UserTable} || '',
-			NameField =>				$TWiki::cfg{HTTPDUserAdminContrib}{NameField} || '',
-			PasswordField =>			$TWiki::cfg{HTTPDUserAdminContrib}{PasswordField} || '',
+			#User =>						$Foswiki::cfg{HTTPDUserAdminContrib}{User},
+			Auth =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Auth} || '',
+			Encrypt =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Encrypt} || 'crypt',
+			Locking =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Locking} || '',
+			Path =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Path} || '',
+			Debug =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Debug},
+			Flags =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Flags} || '',
+			Driver =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Driver} || '',
+			Server =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Server},	#undef == go detect
+			UserTable =>				$Foswiki::cfg{HTTPDUserAdminContrib}{UserTable} || '',
+			NameField =>				$Foswiki::cfg{HTTPDUserAdminContrib}{NameField} || '',
+			PasswordField =>			$Foswiki::cfg{HTTPDUserAdminContrib}{PasswordField} || '',
 			#Debug =>				1
              );
 
@@ -74,7 +74,7 @@ sub new {
 
     $this->{userDatabase} = new HTTPD::UserAdmin(%configuration);
 
-#	print STDERR "new HTTPDAuth".join(', ', $this->{userDatabase}->list())."\n" if ($TWiki::cfg{HTTPDUserAdminContrib}{Debug});
+#	print STDERR "new HTTPDAuth".join(', ', $this->{userDatabase}->list())."\n" if ($Foswiki::cfg{HTTPDUserAdminContrib}{Debug});
 
     return $this;
 }
@@ -148,8 +148,8 @@ sub canFetchUsers {
 sub fetchUsers {
     my $this = shift;
     my @users = $this->{userDatabase}->list();
-    require TWiki::ListIterator;
-    return new TWiki::ListIterator(\@users);
+    require Foswiki::ListIterator;
+    return new Foswiki::ListIterator(\@users);
 }
 
 sub fetchPass {

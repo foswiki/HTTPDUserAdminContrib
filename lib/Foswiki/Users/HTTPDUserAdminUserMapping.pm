@@ -1,7 +1,7 @@
 # Module of Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
 # Copyright (C) 2007 Sven Dowideit, SvenDowideit@distributedINFORMATION.com
-# and TWiki Contributors. All Rights Reserved. TWiki Contributors
+# and Foswiki Contributors. All Rights Reserved. Foswiki Contributors
 # are listed in the AUTHORS file in the root of this distribution.
 # NOTE: Please extend that file, not this notice.
 #
@@ -19,15 +19,15 @@
 
 =begin TML
 
----+ package TWiki::Users::HTTPDUserAdminUserMapping
+---+ package Foswiki::Users::HTTPDUserAdminUserMapping
 
 over-rides TopicUserMapping to store Groups outside topics.
  
 =cut
 
-package TWiki::Users::HTTPDUserAdminUserMapping;
-use TWiki::Users::TopicUserMapping;
-use base 'TWiki::Users::TopicUserMapping';
+package Foswiki::Users::HTTPDUserAdminUserMapping;
+use Foswiki::Users::TopicUserMapping;
+use base 'Foswiki::Users::TopicUserMapping';
 
 use strict;
 use Assert;
@@ -36,7 +36,7 @@ use Error qw( :try );
 use HTTPD::GroupAdmin;
 
 #use Monitor;
-#Monitor::MonitorMethod('TWiki::Users::HTTPDUserAdminUserMapping');
+#Monitor::MonitorMethod('Foswiki::Users::HTTPDUserAdminUserMapping');
 
 =begin TML
 
@@ -54,31 +54,31 @@ sub new {
     my $this = $class->SUPER::new( $session, '' );
     
 	my %configuration =  (
-			DBType =>					$TWiki::cfg{HTTPDUserAdminContrib}{DBType} || 'Text',
-			Host =>						$TWiki::cfg{HTTPDUserAdminContrib}{Host} || '',
-			Port =>						$TWiki::cfg{HTTPDUserAdminContrib}{Port} || '',
-			DB =>						$TWiki::cfg{HTTPDUserAdminContrib}{DB} || $TWiki::cfg{Htpasswd}{FileName},
+			DBType =>					$Foswiki::cfg{HTTPDUserAdminContrib}{DBType} || 'Text',
+			Host =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Host} || '',
+			Port =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Port} || '',
+			DB =>						$Foswiki::cfg{HTTPDUserAdminContrib}{DB} || $Foswiki::cfg{Htpasswd}{FileName},
 			#uncommenting User seems to crash when using Text DBType :(
-			#User =>					$TWiki::cfg{HTTPDUserAdminContrib}{User},
-			Auth =>						$TWiki::cfg{HTTPDUserAdminContrib}{Auth} || '',
-			Encrypt =>					$TWiki::cfg{HTTPDUserAdminContrib}{Encrypt} || 'crypt',
-			Locking =>					$TWiki::cfg{HTTPDUserAdminContrib}{Locking} || '',
-			Path =>						$TWiki::cfg{HTTPDUserAdminContrib}{Path} || '',
-			Debug =>					$TWiki::cfg{HTTPDUserAdminContrib}{Debug},
-			Flags =>					$TWiki::cfg{HTTPDUserAdminContrib}{Flags} || '',
-			Driver =>					$TWiki::cfg{HTTPDUserAdminContrib}{Driver} || '',
-			Server =>					$TWiki::cfg{HTTPDUserAdminContrib}{Server},	#undef == go detect
-			GroupTable =>				$TWiki::cfg{HTTPDUserAdminContrib}{GroupTable} || '',
-			NameField =>				$TWiki::cfg{HTTPDUserAdminContrib}{UserNameField} || '',
-			GroupField =>			    $TWiki::cfg{HTTPDUserAdminContrib}{GroupNameField} || '',
+			#User =>					$Foswiki::cfg{HTTPDUserAdminContrib}{User},
+			Auth =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Auth} || '',
+			Encrypt =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Encrypt} || 'crypt',
+			Locking =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Locking} || '',
+			Path =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Path} || '',
+			Debug =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Debug},
+			Flags =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Flags} || '',
+			Driver =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Driver} || '',
+			Server =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Server},	#undef == go detect
+			GroupTable =>				$Foswiki::cfg{HTTPDUserAdminContrib}{GroupTable} || '',
+			NameField =>				$Foswiki::cfg{HTTPDUserAdminContrib}{UserNameField} || '',
+			GroupField =>			    $Foswiki::cfg{HTTPDUserAdminContrib}{GroupNameField} || '',
 			#Debug =>				1
              );
 
 	$this->{configuration} = \%configuration;
     $this->{groupDatabase} = new HTTPD::GroupAdmin(%configuration);
     
-    my $implPasswordManager = $TWiki::cfg{PasswordManager};
-    $implPasswordManager = 'TWiki::Users::Password'
+    my $implPasswordManager = $Foswiki::cfg{PasswordManager};
+    $implPasswordManager = 'Foswiki::Users::Password'
       if( $implPasswordManager eq 'none' );
     eval "require $implPasswordManager";
     die $@ if $@;
@@ -87,9 +87,9 @@ sub new {
     #if password manager says sorry, we're read only today
     #'none' is a special case, as it means we're not actually using the password manager for
     # registration.
-    if ($this->{passwords}->readOnly() && ($TWiki::cfg{PasswordManager} ne 'none')) {
+    if ($this->{passwords}->readOnly() && ($Foswiki::cfg{PasswordManager} ne 'none')) {
         $session->writeWarning( 'TopicUserMapping has TURNED OFF EnableNewUserRegistration, because the password file is read only.' );
-        $TWiki::cfg{Register}{EnableNewUserRegistration} = 0;
+        $Foswiki::cfg{Register}{EnableNewUserRegistration} = 0;
     }
 
     return $this;
@@ -129,7 +129,7 @@ sub supportsRegistration {
 
 ---++ ObjectMethod handlesUser ( $cUID, $login, $wikiname) -> $boolean
 
-Called by the TWiki::Users object to determine which loaded mapping
+Called by the Foswiki::Users object to determine which loaded mapping
 to use for a given user (must be fast).
 
 =cut
@@ -174,7 +174,7 @@ sub getCanonicalUserID {
         return unless (_userReallyExists($this, $login));
     }
 
-    $login = TWiki::Users::forceCUID($login);
+    $login = Foswiki::Users::forceCUID($login);
     $login = $this->{mapping_id}.$login;
 #print STDERR " OK ($login)";
     return $login;
@@ -261,8 +261,8 @@ sub getWikiName {
     ASSERT($cUID =~ /^$this->{mapping_id}/) if DEBUG;
 
     my $wikiname;
-    if( $TWiki::cfg{Register}{AllowLoginName} ) {
-	    $wikiname = $this->{passwords}->fetchField($cUID, $TWiki::cfg{HTTPDUserAdminContrib}{WikiNameField});
+    if( $Foswiki::cfg{Register}{AllowLoginName} ) {
+	    $wikiname = $this->{passwords}->fetchField($cUID, $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField});
     } else {
         # If the mapping isn't enabled there's no point in loading it
     }
@@ -271,7 +271,7 @@ sub getWikiName {
         #sanitise the generated WikiName - fix up email addresses and stuff
         $wikiname = getLoginName( $this, $cUID );
         if ($wikiname) {
-            $wikiname =~ s/$TWiki::cfg{NameFilter}//go;
+            $wikiname =~ s/$Foswiki::cfg{NameFilter}//go;
             $wikiname =~ s/\.//go;
         }
     }
@@ -301,7 +301,7 @@ sub userExists {
     my $loginName = $this->getLoginName( $cUID );
     return unless (defined($loginName) && ($loginName ne ''));
 
-    if( $loginName eq $TWiki::cfg{DefaultUserLogin} ) {
+    if( $loginName eq $Foswiki::cfg{DefaultUserLogin} ) {
         return $loginName;
     }
 
@@ -323,7 +323,7 @@ sub userExists {
 
 ---++ ObjectMethod eachUser () -> listIterator of cUIDs
 
-Called from TWiki::Users. See the documentation of the corresponding
+Called from Foswiki::Users. See the documentation of the corresponding
 method in that module for details.
 
 =cut
@@ -420,7 +420,7 @@ sub setEmails {
 
 ---++ ObjectMethod findUserByWikiName ($wikiname) -> list of cUIDs associated with that wikiname
 
-Called from TWiki::Users. See the documentation of the corresponding
+Called from Foswiki::Users. See the documentation of the corresponding
 method in that module for details. The $skipExistanceCheck parameter
 is private to this module, and blocks the standard existence check
 to avoid reading .htpasswd when checking group memberships).
@@ -433,10 +433,10 @@ sub findUserByWikiName {
 
     if( $this->isGroup( $wn )) {
         push( @users, $wn);
-    } elsif( $TWiki::cfg{Register}{AllowLoginName} ) {
+    } elsif( $Foswiki::cfg{Register}{AllowLoginName} ) {
         # Add additional mappings defined in WikiUsers
         
-        my @usernames = $this->{passwords}->listMatchingUsers($TWiki::cfg{HTTPDUserAdminContrib}{WikiNameField}, $wn);
+        my @usernames = $this->{passwords}->listMatchingUsers($Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField}, $wn);
         push( @users, @usernames );
         
         # Bloody compatibility!
@@ -538,8 +538,8 @@ sub addUser {
         # add a new user
 
         unless( defined( $password )) {
-            require TWiki::Users;
-            $password = TWiki::Users::randomPassword();
+            require Foswiki::Users;
+            $password = Foswiki::Users::randomPassword();
         }
 
         unless( $this->{passwords}->setPassword( $login, $password )) {
@@ -548,10 +548,10 @@ sub addUser {
                 'Failed to add user: '.$this->{passwords}->error());
         }
         
-        if( !$TWiki::cfg{Register}{AllowLoginName} ) {
+        if( !$Foswiki::cfg{Register}{AllowLoginName} ) {
             $wikiname = $login;
         }
-        $this->{passwords}->setField($login, $TWiki::cfg{HTTPDUserAdminContrib}{WikiNameField}, $wikiname);
+        $this->{passwords}->setField($login, $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField}, $wikiname);
     }
 
     my $user = getCanonicalUserID( $this, $login, 1 );
@@ -573,7 +573,7 @@ sub addUser {
 
 ---++ ObjectMethod eachGroupMember ($group) ->  listIterator of cUIDs
 
-Called from TWiki::Users. See the documentation of the corresponding
+Called from Foswiki::Users. See the documentation of the corresponding
 method in that module for details.
 
 =cut
@@ -585,8 +585,8 @@ sub eachGroupMember {
     my @users = $this->{groupDatabase}->list($group);
     #TODO: expand nested groups..
     #explicitly convert to cUIDs
-    require TWiki::ListIterator;
-    return new TWiki::ListIterator(\@users);
+    require Foswiki::ListIterator;
+    return new Foswiki::ListIterator(\@users);
 }
 
 
@@ -594,7 +594,7 @@ sub eachGroupMember {
 
 ---++ ObjectMethod isGroup ($user) -> boolean
 TODO: what is $user - wikiname, UID ??
-Called from TWiki::Users. See the documentation of the corresponding
+Called from Foswiki::Users. See the documentation of the corresponding
 method in that module for details.
 
 =cut
@@ -603,7 +603,7 @@ sub isGroup {
     my ($this, $user) = @_;
 
     # Groups have the same username as wikiname as canonical name
-    return 1 if $user eq $TWiki::cfg{SuperAdminGroup};
+    return 1 if $user eq $Foswiki::cfg{SuperAdminGroup};
 
     return $this->{groupDatabase}->exists($user);
 }
@@ -612,7 +612,7 @@ sub isGroup {
 
 ---++ ObjectMethod eachGroup () -> ListIterator of groupnames
 
-Called from TWiki::Users. See the documentation of the corresponding
+Called from Foswiki::Users. See the documentation of the corresponding
 method in that module for details.
 
 =cut
@@ -622,8 +622,8 @@ sub eachGroup {
 
     my @groups = $this->{groupDatabase}->list();
 
-    require TWiki::ListIterator;
-    return new TWiki::ListIterator( \@groups );
+    require Foswiki::ListIterator;
+    return new Foswiki::ListIterator( \@groups );
 }
 
 
@@ -631,7 +631,7 @@ sub eachGroup {
 
 ---++ ObjectMethod eachMembership ($cUID) -> ListIterator of groups this user is in
 
-Called from TWiki::Users. See the documentation of the corresponding
+Called from Foswiki::Users. See the documentation of the corresponding
 method in that module for details.
 
 =cut
@@ -640,8 +640,8 @@ sub eachMembership {
     my ($this, $user) = @_;
 
     _getListOfGroups( $this );
-    require TWiki::ListIterator;
-    my $it = new TWiki::ListIterator( \@{$this->{groupsList}} );
+    require Foswiki::ListIterator;
+    my $it = new Foswiki::ListIterator( \@{$this->{groupsList}} );
     $it->{filter} = sub {
         $this->isInGroup($user, $_[0]);
     };
@@ -653,8 +653,8 @@ sub eachMembership {
 ---++ ObjectMethod isAdmin( $user ) -> $boolean
 
 True if the user is an admin
-   * is $TWiki::cfg{SuperAdminGroup}
-   * is a member of the $TWiki::cfg{SuperAdminGroup}
+   * is $Foswiki::cfg{SuperAdminGroup}
+   * is a member of the $Foswiki::cfg{SuperAdminGroup}
 
 =cut
 
@@ -664,10 +664,10 @@ sub isAdmin {
     $this->ASSERT_IS_CANONICAL_USER_ID($user) if DEBUG;
 
     #TODO: this might not apply now that we have BaseUserMapping - test
-    if ($user eq $TWiki::cfg{SuperAdminGroup}) {
+    if ($user eq $Foswiki::cfg{SuperAdminGroup}) {
         $isAdmin = 1;
     } else {
-        my $sag = $TWiki::cfg{SuperAdminGroup};
+        my $sag = $Foswiki::cfg{SuperAdminGroup};
         $isAdmin = $this->isInGroup( $user, $sag );
     }
 
@@ -679,7 +679,7 @@ sub isAdmin {
 
 ---++ ObjectMethod isInGroup ($user, $group, $scanning) -> bool
 
-Called from TWiki::Users. See the documentation of the corresponding
+Called from Foswiki::Users. See the documentation of the corresponding
 method in that module for details.
 
 =cut
