@@ -173,7 +173,7 @@ sub getCanonicalUserID {
         return unless (_userReallyExists($this, $login));
     }
 
-    $login = Foswiki::Users::forceCUID($login);
+    $login = Foswiki::Users::mapLogin2cUID($login);
     $login = $this->{mapping_id}.$login;
 #print STDERR " OK ($login)";
     return $login;
@@ -685,7 +685,7 @@ method in that module for details.
 sub isInGroup {
     my( $this, $user, $group, $scanning ) = @_;
     ASSERT($user) if DEBUG;
-
+    
     return $this->{groupDatabase}->exists($group, $user);
 }
 

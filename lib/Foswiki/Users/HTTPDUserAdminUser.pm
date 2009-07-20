@@ -165,6 +165,7 @@ sub checkPassword {
 	
 	#TODO: this should be extracted to a new LoginManager i think
 	my $authen = new HTTPD::Authen($this->{configuration});
+print STDERR "============================== check($login, $password)\n";
 	return $authen->check($login, $password);
 }
 

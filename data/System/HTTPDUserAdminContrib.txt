@@ -23,11 +23,28 @@ From there you can use that file in the =Text= =DBType=, use =dbmmanage= to impo
 ---+++ DBM mode
 
 ---+++ SQL mode (DBI)
-This Contrib will not create the database setup for you, you will need to have an existing database, with appropriate database connection permissions, and a database table for with the required fields that is accessible by this user.
+This Contrib will not create the database setup for you, you will need to have an existing database, 
+with appropriate database connection permissions, and a database table for with the required fields that is accessible by this user.
 
 Note that the DB Schema name is set in the top section of the settings (defaults to the .htpasswd filename).
 
 *Beware:* Do not use table names, or column names that are SQL keywords (such as group)
+
+for a minimal, non-optimised mysql setup, run =mysql -p= and enter:
+   * where =www-data= is the user that the foswiki scripts run as.
+<verbatim>
+GRANT ALL PRIVILEGES ON *.* TO 'www-data'@'localhost' IDENTIFIED BY 'foswiki' WITH GRANT OPTION;
+CREATE TABLE `HTTPDUsers`.`usertable` (
+  `name` TINYTEXT  NOT NULL,
+  `wikiname` TINYTEXT  NOT NULL,
+  `emails` TINYTEXT  NOT NULL,
+  `password` TINYTEXT  NOT NULL
+);
+CREATE TABLE `HTTPDUsers`.`grouptable` (
+  `name` TINYTEXT  NOT NULL,
+  `username` TINYTEXT  NOT NULL
+);
+</verbatim>
 
 ---+++ extra not yet documented functionality
 This Contrib can also define and store group definitions in the same database.

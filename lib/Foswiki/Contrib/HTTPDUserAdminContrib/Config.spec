@@ -58,14 +58,14 @@ $Foswiki::cfg{HTTPDUserAdminContrib}{User} = "";
 #Auth - Database login password
 $Foswiki::cfg{HTTPDUserAdminContrib}{Auth} = "";
 # **STRING 30**
-#Driver - Driver for DBI (Default is 'mSQL')
-$Foswiki::cfg{HTTPDUserAdminContrib}{Driver} = "mSQL";
+#Driver - Driver for DBI (Default is 'mysql')
+$Foswiki::cfg{HTTPDUserAdminContrib}{Driver} = "mysql";
 # **STRING 30**
 #UserTable - Table with field names below (set ={HTTPDUserAdminContrib}{DB}= for the Database Schema name)
-$Foswiki::cfg{HTTPDUserAdminContrib}{UserTable} = "";
+$Foswiki::cfg{HTTPDUserAdminContrib}{UserTable} = "usertable";
 # **STRING 30**
 #NameField - Field for the name (Default is 'user')
-$Foswiki::cfg{HTTPDUserAdminContrib}{NameField} = "user";
+$Foswiki::cfg{HTTPDUserAdminContrib}{NameField} = "name";
 # **STRING 30**
 #NameField - Field for the wikiname (only used if {Register}{AllowLoginName} is on) (Default is 'wikiname')
 $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField} = "wikiname";
@@ -75,11 +75,11 @@ $Foswiki::cfg{HTTPDUserAdminContrib}{PasswordField} = "password";
 # **STRING 30**
 #GroupTable - Table with field names below (set ={HTTPDUserAdminContrib}{DB}= for the Database Schema name)
 # only applicable if UserMapping is set to Foswiki::Users::HTTPDUserAdminUserMapping
-$Foswiki::cfg{HTTPDUserAdminContrib}{GroupTable} = "";
+$Foswiki::cfg{HTTPDUserAdminContrib}{GroupTable} = "grouptable";
 # **STRING 30**
 #GroupNameField - Field for the group (Default is 'group')
-$Foswiki::cfg{HTTPDUserAdminContrib}{GroupNameField} = "group";
+$Foswiki::cfg{HTTPDUserAdminContrib}{GroupNameField} = "name";
 # **STRING 30**
 #userNameField - Field for the name (Default is 'user') (must match the User table's NameField in value)
-$Foswiki::cfg{HTTPDUserAdminContrib}{UserNameField} = "user";
+$Foswiki::cfg{HTTPDUserAdminContrib}{UserNameField} = "username";
 

@@ -1,5 +1,8 @@
 # Dependencies for HTTPDUserAdminContrib
 # Example:
 # Time::ParseDate,>=2003.0211,cpan,Required.
-HTTPD::UserAdmin,>=1.66,perl,
-HTTPD::Authen,>=1.66,perl
+HTTPD::UserAdmin,>=1.66,cpan,Required.
+HTTPD::GroupAdmin,>=1.66,cpan,Required.
+HTTPD::Authen,>=1.66,cpan,Required.
+
+DBD::mysql,>=2.0,cpan,Optional. use if talking to MySQL
