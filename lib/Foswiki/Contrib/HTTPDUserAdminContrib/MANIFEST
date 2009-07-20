@@ -1,5 +1,5 @@
 # Release manifest for HTTPDUserAdminContrib
-data/Foswiki/HTTPDUserAdminContrib.txt 0644 Documentation
+data/System/HTTPDUserAdminContrib.txt 0644 Documentation
 lib/Foswiki/Contrib/HTTPDUserAdminContrib.pm 0644 Perl module
 lib/Foswiki/Contrib/HTTPDUserAdminContrib/Config.spec
 lib/Foswiki/Users/HTTPDUserAdminUser.pm 0644 Perl module

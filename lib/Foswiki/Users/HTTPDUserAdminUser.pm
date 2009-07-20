@@ -1,13 +1,13 @@
 # Module of Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# Copyright (C) 2007 SvenDowideit@home.org.au
+# Copyright (C) 2007 SvenDowideit@foswiki.com
 # All Rights Reserved. 
 # Foswiki Contributors are listed in the AUTHORS file in the root of 
 # this distribution. NOTE: Please extend that file, not this notice.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
+# as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version. For
 # more details read LICENSE in the root of this distribution.
 #

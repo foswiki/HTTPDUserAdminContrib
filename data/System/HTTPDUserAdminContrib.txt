@@ -7,19 +7,17 @@ One line description, required for extensions repository catalog.
 
 ---++ Usage
 This Contrib adds [[http://httpd.apache.org/docs/2.2/mod/mod_authn_dbm.html][auth DBM]] 
-and [[http://httpd.apache.org/docs/2.2/mod/mod_authn_dbd.html][auth SQL]] support to TWiki, 
+and [[http://httpd.apache.org/docs/2.2/mod/mod_authn_dbd.html][auth SQL]] support to foswiki, 
 though the [[http://search.cpan.org/~lds/HTTPD-User-Manage-1.66/lib/HTTPD/UserAdmin.pm][HTTPD::UserAdmin]] CPAN module.
-
-It has been developed and tested for the TWiki-4.2, though _may_ be useable for previous releases.
 
 You receive maximal performance benefit by using the =SQL= mode, and ensuring ={Register}{AllowLoginName}= is off (so that the %MAINWEB%.WikiUsers topic is not needed to convert login names to Wiki Names.
 
 See the Extensions | HTTPDUserAdminContrib section of =configure= to set up the specific options.
 
 ---+++ Text file user store (.htpassword)
-If you are using the Text mode a once off converstion from an existing TWiki htpasswd file must be done, due to differences in the way that email addresses are stored.
+If you are using the Text mode a once off converstion from an existing Foswiki htpasswd file must be done, due to differences in the way that email addresses are stored.
 
-run =perl -pi~ -e "s/$([^:]*):([^:]*):(.*)^/$1:$2:emails=$3/g" twiki/data/.htpasswd= to convert from TWiki's native htpassword format.
+run =perl -pi~ -e "s/$([^:]*):([^:]*):(.*)^/$1:$2:emails=$3/g" foswiki/data/.htpasswd= to convert from Foswiki's native htpassword format.
 
 From there you can use that file in the =Text= =DBType=, use =dbmmanage= to import it to a DBM file, or run a similar tool to import it into your database.
 ---+++ DBM mode
@@ -36,23 +34,23 @@ This Contrib can also define and store group definitions in the same database.
 
 ---++ Installation Instructions
    1 Install %TOPIC%
-   2 select TWiki::Users::HTTPDUserAdminContrib in the Security|Passwords|{PasswordManager} selector in Configure
+   2 select Foswiki::Users::HTTPDUserAdminContrib in the Security|Passwords|{PasswordManager} selector in Configure
    3 then set the appropriate settings in the Exensions|HTTPDUserAdminContrib section of Configure.
 
 %$INSTALL_INSTRUCTIONS%
 
 ---++ Contrib Info
 
-|  Contrib Author(s): | TWiki:Main.SvenDowideit |
-|  Copyright: | &copy; 2008 SvenDowideit@distributedINFORMATION.com |
+|  Contrib Author(s): | Foswiki:Main.SvenDowideit |
+|  Copyright: | &copy; 2008 SvenDowideit@fosiki.com |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Contrib Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
-|  March 2008 | version 2 - updated for the 4.2.0 release, changes to allow registration, DB (MySQL in particular) and added group table |
+|  Jul 2009 | port to Foswiki |
+|  March 2008 | version 2 - updated for the t(m)wiki 4.2.0 release, changes to allow registration, DB (MySQL in particular) and added group table |
 |  July 2007 | version 1 - initial release |
 |  Dependencies: | %$DEPENDENCIES% |
-|  Contrib Home: | http://twiki.org/cgi-bin/view/Plugins/HTTPDUserAdminContrib |
-|  Feedback: | http://twiki.org/cgi-bin/view/Plugins/HTTPDUserAdminContribDev |
+|  Contrib Home: | http://foswiki.org/Extensions/HTTPDUserAdminContrib |
 
 __Related Topics:__ [[%SYSTEMWEB%.Contribs][Contribs]], %SYSTEMWEB%.DeveloperDocumentationCategory, %SYSTEMWEB%.AdminDocumentationCategory, %SYSTEMWEB%.DefaultPreferences, %USERSWEB%.SitePreferences
 

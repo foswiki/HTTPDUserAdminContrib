@@ -1,6 +1,6 @@
 # Module of Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# Copyright (C) 2007 Sven Dowideit, SvenDowideit@distributedINFORMATION.com
+# Copyright (C) 2007 Sven Dowideit, SvenDowideit@fosiki.com
 # and Foswiki Contributors. All Rights Reserved. Foswiki Contributors
 # are listed in the AUTHORS file in the root of this distribution.
 # NOTE: Please extend that file, not this notice.
@@ -43,14 +43,13 @@ use HTTPD::GroupAdmin;
 ---++ ClassMethod new ($session, $impl)
 
 Constructs a new user mapping handler of this type, referring to $session
-for any required TWiki services.
+for any required foswiki services.
 
 =cut
 
 sub new {
     my( $class, $session ) = @_;
 
-    # The null mapping name is reserved for TWiki for backward-compatibility
     my $this = $class->SUPER::new( $session, '' );
     
 	my %configuration =  (
@@ -305,7 +304,6 @@ sub userExists {
         return $loginName;
     }
 
-    # TWiki allows *groups* to log in
     if( $this->isGroup( $loginName )) {
         return $loginName;
     }
@@ -441,7 +439,7 @@ sub findUserByWikiName {
         
         # Bloody compatibility!
         # The wikiname is always a registered user for the purposes of this
-        # mapping. We have to do this because TWiki defines access controls
+        # mapping. We have to do this because foswiki defines access controls
         # in terms of mapped users, and if a wikiname is *missing* from the
         # mapping there is "no such user".
 #HUH?        push( @users, getCanonicalUserID( $this, $wn ));
@@ -516,7 +514,7 @@ sub passwordError {
 
 #######################################################################
 # don't create or use the MAIN.WikiUsers topic 
-# this is a copy of the functionality in TopicUserMapping, with the TWikiUser topic part removed
+# this is a copy of the functionality in TopicUserMapping, with the WikiUser topic part removed
 #TODO: shame that its the UI::Registration code that creates the User topic - tahts close to pointless too
 
 sub addUser {

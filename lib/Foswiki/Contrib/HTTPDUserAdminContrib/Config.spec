@@ -1,6 +1,6 @@
 # ---+ Extensions
 # ---++ HTTPDUserAdminContrib
-#more feature rich password handleing, using HTTPD::UserAdmin - supports Text, DBM and SQL backends
+# feature rich password handling, using HTTPD::UserAdmin - supports Text, DBM and SQL backends
 
 # **SELECT Text,DBM,SQL**
 #DBType - The type of database, one of 'DBM', 'Text', or 'SQL' (Default is 'Text')
