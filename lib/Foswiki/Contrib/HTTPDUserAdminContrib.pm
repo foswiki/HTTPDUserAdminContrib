@@ -19,5 +19,5 @@ use vars qw( $VERSION $RELEASE $SHORTDESCRIPTION );
 
 $VERSION = '$Rev$';
 $RELEASE = '';
-$SHORTDESCRIPTION = '';
+$SHORTDESCRIPTION = 'A User and Password module supporting text or DBM format htpasswd files, and SQL using HTTPD::UserAdmin CPAN module';
 

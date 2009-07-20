@@ -65,7 +65,7 @@ INSERT INTO grouptable (name, username) VALUES ('SuperGroup', 'testuser8') ;
 ---++ Contrib Info
 
 |  Contrib Author(s): | Foswiki:Main.SvenDowideit |
-|  Copyright: | &copy; 2008 SvenDowideit@fosiki.com |
+|  Copyright: | &copy; 2008-2009 SvenDowideit@fosiki.com |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Contrib Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
