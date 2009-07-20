@@ -155,8 +155,12 @@ sub fetchUsers {
 sub fetchPass {
     my( $this, $login ) = @_;
     ASSERT( $login ) if DEBUG;
-    my $r = $this->{userDatabase}->password( $login );
-    $this->{error} = undef;
+    
+    my $r;
+    if ($this->{userDatabase}->exists( $login )) {
+	$r = $this->{userDatabase}->password( $login );
+	$this->{error} = undef;
+    }
     return $r;
 }
 
@@ -165,7 +169,6 @@ sub checkPassword {
 	
 	#TODO: this should be extracted to a new LoginManager i think
 	my $authen = new HTTPD::Authen($this->{configuration});
-print STDERR "============================== check($login, $password)\n";
 	return $authen->check($login, $password);
 }
 

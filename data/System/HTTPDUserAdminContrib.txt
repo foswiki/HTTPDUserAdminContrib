@@ -48,7 +48,12 @@ CREATE TABLE `HTTPDUsers`.`grouptable` (
 </verbatim>
 
 ---+++ extra not yet documented functionality
-This Contrib can also define and store group definitions in the same database.
+This Contrib can also use group definitions in the same database. There is however no in-wiki user interface to create and maintain these groups for now.
+
+you can for example use =mysql= to
+<verbatim>
+INSERT INTO grouptable (name, username) VALUES ('SuperGroup', 'testuser8') ;
+</verbatim>
 
 ---++ Installation Instructions
    1 Install %TOPIC%
