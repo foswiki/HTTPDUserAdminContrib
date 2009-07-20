@@ -33,7 +33,8 @@ Note that the DB Schema name is set in the top section of the settings (defaults
 for a minimal, non-optimised mysql setup, run =mysql -p= and enter:
    * where =www-data= is the user that the foswiki scripts run as.
 <verbatim>
-GRANT ALL PRIVILEGES ON *.* TO 'www-data'@'localhost' IDENTIFIED BY 'foswiki' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON 'HTTPDUsers'.* TO 'www-data'@'localhost' IDENTIFIED BY 'foswiki' WITH GRANT OPTION;
+create database HTTPDUsers;
 CREATE TABLE `HTTPDUsers`.`usertable` (
   `name` TINYTEXT  NOT NULL,
   `wikiname` TINYTEXT  NOT NULL,
