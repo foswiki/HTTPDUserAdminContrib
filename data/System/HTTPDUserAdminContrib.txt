@@ -32,13 +32,15 @@ Note that the DB Schema name is set in the top section of the settings (defaults
 
 for a minimal, non-optimised mysql setup, run =mysql -p= and enter:
    * where =www-data= is the user that the foswiki scripts run as.
+   * if using Strawberry perl on windows, its possible that the user will be called =ODBC=
 <verbatim>
-GRANT ALL PRIVILEGES ON 'HTTPDUsers'.* TO 'www-data'@'localhost' IDENTIFIED BY 'foswiki' WITH GRANT OPTION;
 create database HTTPDUsers;
+GRANT ALL PRIVILEGES ON *.* TO 'www-data'@'localhost' 
+IDENTIFIED BY 'foswiki' WITH GRANT OPTION;
 CREATE TABLE `HTTPDUsers`.`usertable` (
   `name` TINYTEXT  NOT NULL,
-  `wikiname` TINYTEXT  NOT NULL,
-  `emails` TINYTEXT  NOT NULL,
+  `wikiname` TINYTEXT,
+  `emails` TINYTEXT,
   `password` TINYTEXT  NOT NULL
 );
 CREATE TABLE `HTTPDUsers`.`grouptable` (
@@ -69,6 +71,7 @@ INSERT INTO grouptable (name, username) VALUES ('SuperGroup', 'testuser8') ;
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Contrib Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  Sep 2009 | testing with windows and strawberry perl |
 |  Jul 2009 | port to Foswiki |
 |  March 2008 | version 2 - updated for the t(m)wiki 4.2.0 release, changes to allow registration, DB (MySQL in particular) and added group table |
 |  July 2007 | version 1 - initial release |
