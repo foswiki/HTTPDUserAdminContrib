@@ -637,9 +637,7 @@ method in that module for details.
 sub eachMembership {
     my ($this, $user) = @_;
 
-    _getListOfGroups( $this );
-    require Foswiki::ListIterator;
-    my $it = new Foswiki::ListIterator( \@{$this->{groupsList}} );
+    my $it = $this->eachGroup();
     $it->{filter} = sub {
         $this->isInGroup($user, $_[0]);
     };
