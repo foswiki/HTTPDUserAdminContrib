@@ -37,16 +37,20 @@ for a minimal, non-optimised mysql setup, run =mysql -p= and enter:
 create database HTTPDUsers;
 GRANT ALL PRIVILEGES ON *.* TO 'www-data'@'localhost' 
 IDENTIFIED BY 'foswiki' WITH GRANT OPTION;
-CREATE TABLE `HTTPDUsers`.`usertable` (
-  `name` TINYTEXT  NOT NULL,
-  `wikiname` TINYTEXT,
-  `emails` TINYTEXT,
-  `password` TINYTEXT  NOT NULL
-);
-CREATE TABLE `HTTPDUsers`.`grouptable` (
-  `name` TINYTEXT  NOT NULL,
-  `username` TINYTEXT  NOT NULL
-);
+CREATE TABLE  `HTTPDUsers`.`usertable` (
+  `name` tinytext NOT NULL,
+  `wikiname` tinytext,
+  `emails` tinytext,
+  `password` tinytext NOT NULL,
+  `idx` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`idx`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+CREATE TABLE  `HTTPDUsers`.`grouptable` (
+  `name` tinytext NOT NULL,
+  `username` tinytext NOT NULL,
+  `idx` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`idx`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 </verbatim>
 
 ---+++ extra not yet documented functionality
@@ -71,7 +75,7 @@ INSERT INTO grouptable (name, username) VALUES ('SuperGroup', 'testuser8') ;
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Contrib Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
-|  Sep 2009 | testing with windows and strawberry perl |
+|  Sep 2009 | testing with windows and strawberry perl, fix for group definitions using WikiName rather than login, and enable nested groups |
 |  Jul 2009 | port to Foswiki |
 |  March 2008 | version 2 - updated for the t(m)wiki 4.2.0 release, changes to allow registration, DB (MySQL in particular) and added group table |
 |  July 2007 | version 1 - initial release |

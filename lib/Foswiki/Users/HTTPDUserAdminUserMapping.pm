@@ -581,11 +581,33 @@ sub eachGroupMember {
     my $group = shift;
     
     my @users = $this->{groupDatabase}->list($group);
-    #TODO: expand nested groups..
-    #explicitly convert to cUIDs
+    my @cuids;
+    foreach my $ident (@users) {
+        if ($this->isGroup($ident)) {
+            my $it = $this->eachGroupMember($ident);
+            while ( $it->hasNext() ) {
+                push( @cuids, $it->next() );
+            }
+        } else {
+            #explicitly convert to cUIDs
+            my $cuid = $this->getCanonicalUserID($ident);	#login
+		if (defined($cuid)) {
+	            push(@cuids, $cuid);
+			print STDERR "pushing $cuid ($ident) onto groupmembers for $group\n";
+		} else {
+			my $users = $this->findUserByWikiName($ident);
+			foreach my $ident (@$users) {
+		            push(@cuids, $ident );
+				print STDERR "pushing $ident onto groupmembers for $group\n";
+			}
+		}
+        }
+    }
+    
     require Foswiki::ListIterator;
-    return new Foswiki::ListIterator(\@users);
+    return new Foswiki::ListIterator(\@cuids);
 }
+
 
 
 =begin TML
@@ -684,8 +706,17 @@ sub isInGroup {
     my( $this, $user, $group, $scanning ) = @_;
     ASSERT($user) if DEBUG;
     
-    return $this->{groupDatabase}->exists($group, $user);
+    return 1 if ($this->{groupDatabase}->exists($group, $user));
+    my $wikiname = $this->getWikiName($user);
+    return 1 if ($this->{groupDatabase}->exists($group, $wikiname ));
+    
+    #now for nested groups :/
+    my $it = $this->eachGroupMember($group);
+    while ( $it->hasNext() ) {
+        return 1 if ($user eq $it->next());
+    }
 }
+
 
 
 
