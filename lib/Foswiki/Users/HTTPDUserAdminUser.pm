@@ -80,24 +80,34 @@ sub new {
 }
 
 #add func to HTTPD::UserAdmin::SQL so i can ask for a list of users by fields..
-sub listMatchingUsers
-{
+#else do it the long way
+sub listMatchingUsers {
         my($this, $field, $value) = @_;
         my $self = $this->{userDatabase};
-        my $statement = 
-	    sprintf("SELECT %s from %s WHERE %s = '%s'\n",
-		    @{$self}{qw(NAMEFIELD USERTABLE)}, $field, $value);
-        print STDERR $statement if $self->debug;
-        my $sth = $self->{'_DBH'}->prepare($statement);
-        Carp::carp("Cannot prepare sth ($DBI::err): $DBI::errstr")
-	    unless $sth;
-        $sth->execute || Carp::croak($DBI::errstr);
-        my($user,@list);
-        while($user = $sth->fetchrow) {
-    	    push(@list, $user);
-        }
-        $sth->finish;
-        return @list;
+        my @list;
+        
+        if ($Foswiki::cfg{HTTPDUserAdminContrib}{DBType} eq 'SQL') {
+	    my $statement = 
+		sprintf("SELECT %s from %s WHERE %s = '%s'\n",
+			@{$self}{qw(NAMEFIELD USERTABLE)}, $field, $value);
+	    print STDERR $statement if $self->debug;
+	    my $sth = $self->{'_DBH'}->prepare($statement);
+	    Carp::carp("Cannot prepare sth ($DBI::err): $DBI::errstr")
+		unless $sth;
+	    $sth->execute || Carp::croak($DBI::errstr);
+	    my $user;
+	    while($user = $sth->fetchrow) {
+		push(@list, $user);
+	    }
+	    $sth->finish;
+    } else {
+	    my @userlist = $this->{userDatabase}->list();
+	    foreach my $user (@userlist) {
+		    my $userValue = fetchField($this, $user, $field);
+		    push(@list, $user) if (defined($userValue) and ($userValue eq $value));
+	    }
+    }
+    return @list;
 }
 
 =begin TML
