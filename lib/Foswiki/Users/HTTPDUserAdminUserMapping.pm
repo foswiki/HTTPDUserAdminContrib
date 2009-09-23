@@ -745,11 +745,15 @@ sub USERLIST {
     my($session, $params, $aTopic, $aWeb) = @_;  
     
     return '%RED%USERLIST only evaluated for Admin Users%ENDCOLOR%' unless (Foswiki::Func::isAnAdmin());
+
+    require Digest::MD5;
+    my $string_id = join(':', map { $_.'="'.$params->{$_}.'"' } keys(%$params));
+    my $paging_ID = 'USERINFO'.Digest::MD5::md5_hex($string_id);
     
     my $this = $session->{users};
     my $format = $params->{format} || $params->{_DEFAULT} || '   * $wikiname - $username - ';
     my $pagesize = $params->{pagesize} ||10;
-    my $showpage = $params->{showpage} || 1;
+    my $showpage = $session->{request}->param($paging_ID) || $params->{showpage} || 1;
     my $header = $params->{header} || '';
     my $footer = $params->{footer} || '';
     my $separator = $params->{separator} || '$n';
@@ -761,22 +765,52 @@ sub USERLIST {
     my $idx = 0;
     my $startidx = ($showpage-1)*$pagesize;
     my $stopidx = ($showpage)*$pagesize;
+    my ($nextidx, $previousidx); #undefined means no nav's needed
     while ($it->hasNext()) {
         my $cuid = $it->next();
         
         my $wikiname = $this->getWikiName($cuid);
-        next if (@exclusions ~~ $wikiname);
+        next if (@exclusions ~~ $wikiname);                     #TODO: eeeeek perl 5.10ism
         if ($idx >= $startidx) {
             if ($idx >= $stopidx) {
+                $nextidx = $idx; #there is a next element that isn't excluded.
                 last;
             }
             my $login = $this->getLoginName($cuid);
             my $result = '%USERINFO{"'.$login.'" format="'.$format.'"}%';
             push(@results, $result);
-        } 
+        }  else {
+            $previousidx = $idx; #there is a non-excluded previous element
+        }
         $idx++;
     }
     my $result = $header.join($separator, @results).$footer;
+    
+    my $previouspage = '';
+    my $previouspageurl = '';
+    if (defined($previousidx)) {
+        #TODO: need to rebuild the URL from the incoming, and 'modify/set' the paging_ID's value..
+        $previouspageurl = Foswiki::Func::getScriptUrl($aWeb, $aTopic, 'view', $paging_ID => ($showpage-1));
+        $previouspage = "[[$previouspageurl][<]]";
+    }
+    my $nextpage = '';
+    my $nextpageurl = '';
+    if (defined($nextidx)) {
+        #TODO: need to rebuild the URL from the incoming, and 'modify/set' the paging_ID's value..
+        $nextpageurl = Foswiki::Func::getScriptUrl($aWeb, $aTopic, 'view', $paging_ID => ($showpage+1));
+        $nextpage = "[[$nextpageurl][>]]";
+    }
+    
+    $result =~ s/\$pagenumber/$showpage/ge;
+    $result =~ s/\$previouspagenumber/($showpage-1)/ge;
+    $result =~ s/\$nextpagenumber/($showpage+1)/ge;
+
+    $result =~ s/\$previouspageurl/$previouspageurl/ge;
+    $result =~ s/\$nextpageurl/$nextpageurl/ge;
+    
+    $result =~ s/\$previouspage/$previouspage/ge;
+    $result =~ s/\$nextpage/$nextpage/ge;
+    
     $result =~ s/\$sep/$separator/ge;
     $result =~ s/\$n/\n/g;
     return $result;
