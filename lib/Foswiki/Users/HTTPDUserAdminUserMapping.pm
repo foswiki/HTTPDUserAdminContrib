@@ -27,6 +27,7 @@ over-rides TopicUserMapping to store Groups outside topics.
 
 package Foswiki::Users::HTTPDUserAdminUserMapping;
 use Foswiki::Users::TopicUserMapping;
+use Foswiki::Func;
 use base 'Foswiki::Users::TopicUserMapping';
 
 use strict;
@@ -62,6 +63,7 @@ sub new {
 			Auth =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Auth} || '',
 			Encrypt =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Encrypt} || 'crypt',
 			Locking =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Locking} || '',
+    #TODO: need to test the LOCKING - it seems to fail on my trunk, and when it does, give a server error
 			Path =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Path} || '',
 			Debug =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Debug},
 			Flags =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Flags} || '',
@@ -83,6 +85,8 @@ sub new {
     die $@ if $@;
     $this->{passwords} = $implPasswordManager->new( $session );
     
+    #TODO: need to assert that the pwd manager has the required methods - fetchField...
+    
     #if password manager says sorry, we're read only today
     #'none' is a special case, as it means we're not actually using the password manager for
     # registration.
@@ -90,6 +94,8 @@ sub new {
         $session->writeWarning( 'TopicUserMapping has TURNED OFF EnableNewUserRegistration, because the password file is read only.' );
         $Foswiki::cfg{Register}{EnableNewUserRegistration} = 0;
     }
+    
+    Foswiki::Func::registerTagHandler( 'USERLIST', \&USERLIST );
 
     return $this;
 }
@@ -717,7 +723,46 @@ sub isInGroup {
     }
 }
 
-
+sub USERLIST {
+    my($session, $params, $aTopic, $aWeb) = @_;  
+    
+    return '%RED%USERLIST only evaluated for Admin Users%ENDCOLOR%' unless (Foswiki::Func::isAnAdmin());
+    
+    my $this = $session->{users};
+    my $format = $params->{format} || $params->{_DEFAULT} || '   * $wikiname - $username - ';
+    my $pagesize = $params->{pagesize} ||10;
+    my $showpage = $params->{showpage} || 1;
+    my $header = $params->{header} || '';
+    my $footer = $params->{footer} || '';
+    my $separator = $params->{separator} || '$n';
+    #exclude these wikinames... 
+    my @exclusions = split(/\s*,\s*/, $params->{exclude} || '');
+    
+    my $it = $this->eachUser();
+    my @results;
+    my $idx = 0;
+    my $startidx = ($showpage-1)*$pagesize;
+    my $stopidx = ($showpage)*$pagesize;
+    while ($it->hasNext()) {
+        my $cuid = $it->next();
+        
+        my $wikiname = $this->getWikiName($cuid);
+        next if (@exclusions ~~ $wikiname);
+        if ($idx >= $startidx) {
+            if ($idx >= $stopidx) {
+                last;
+            }
+            my $login = $this->getLoginName($cuid);
+            my $result = '%USERINFO{"'.$login.'" format="'.$format.'"}%';
+            push(@results, $result);
+        } 
+        $idx++;
+    }
+    my $result = $header.join($separator, @results).$footer;
+    $result =~ s/\$sep/$separator/ge;
+    $result =~ s/\$n/\n/g;
+    return $result;
+}
 
 
 1;
