@@ -76,8 +76,13 @@ sub new {
              );
 
 	$this->{configuration} = \%configuration;
-    $this->{groupDatabase} = new HTTPD::GroupAdmin(%configuration);
-    
+	my %groupCfg = %configuration;
+	if (defined($Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB}) 
+            and $Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB} ne '') {
+            $groupCfg{DB} = $Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB};
+            $this->{groupDatabase} = new HTTPD::GroupAdmin(%groupCfg);
+        }
+        
     my $implPasswordManager = $Foswiki::cfg{PasswordManager};
     $implPasswordManager = 'Foswiki::Users::Password'
       if( $implPasswordManager eq 'none' );
@@ -114,8 +119,10 @@ sub finish {
     my $this = shift;
 
     $this->SUPER::finish();
-    $this->{groupDatabase}->commit();
-    undef $this->{groupDatabase};
+    if (defined($this->{groupDatabase})) {
+        $this->{groupDatabase}->commit();
+        undef $this->{groupDatabase};
+    }
 }
 
 
@@ -586,6 +593,8 @@ sub eachGroupMember {
     my $this = shift;
     my $group = shift;
     
+    return $this->SUPER::eachGroupMember($group) unless (defined($this->{groupDatabase}));
+    
     my @users = $this->{groupDatabase}->list($group);
     my @cuids;
     foreach my $ident (@users) {
@@ -628,6 +637,8 @@ method in that module for details.
 sub isGroup {
     my ($this, $user) = @_;
 
+    return $this->SUPER::isGroup($user) unless (defined($this->{groupDatabase}));
+
     # Groups have the same username as wikiname as canonical name
     return 1 if $user eq $Foswiki::cfg{SuperAdminGroup};
 
@@ -645,6 +656,8 @@ method in that module for details.
 
 sub eachGroup {
     my ( $this ) = @_;
+    
+    return $this->SUPER::eachGroup() unless (defined($this->{groupDatabase}));
 
     my @groups = $this->{groupDatabase}->list();
 
@@ -664,9 +677,12 @@ method in that module for details.
 
 sub eachMembership {
     my ($this, $user) = @_;
+    
+    return $this->SUPER::eachMembership($user) unless (defined($this->{groupDatabase}));
 
     my $it = $this->eachGroup();
     $it->{filter} = sub {
+        print STDERR "----- is $user in the $_[0] group?";
         $this->isInGroup($user, $_[0]);
     };
     return $it;
@@ -682,7 +698,7 @@ True if the user is an admin
 
 =cut
 
-sub isAdmin {
+sub DONTNEEDTHIS_isAdmin {
     my( $this, $user ) = @_;
     my $isAdmin = 0;
     $this->ASSERT_IS_CANONICAL_USER_ID($user) if DEBUG;
@@ -711,6 +727,8 @@ method in that module for details.
 sub isInGroup {
     my( $this, $user, $group, $scanning ) = @_;
     ASSERT($user) if DEBUG;
+    
+    return $this->SUPER::isInGroup($user, $group, $scanning) unless (defined($this->{groupDatabase}));
     
     return 1 if ($this->{groupDatabase}->exists($group, $user));
     my $wikiname = $this->getWikiName($user);

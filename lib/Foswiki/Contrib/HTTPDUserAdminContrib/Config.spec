@@ -10,6 +10,12 @@ $Foswiki::cfg{HTTPDUserAdminContrib}{DBType} = "Text";
 #DB - The database name (Default is '.htpasswd' for DBM & Text databases)
 $Foswiki::cfg{HTTPDUserAdminContrib}{DB} = $Foswiki::cfg{Htpasswd}{FileName};
 
+# **STRING 200**
+#GroupDB - The group database name (Default is '' for DBM & Text databases)
+# if not set, it will default to using Topic based user definitions
+# otherwise can be set to a .htgroups file, DBM or the same database as ={DB}=
+$Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB} = '';
+
 # **STRING 30**
 #Server - HTTP server name (Default is the generic class, that works with NCSA, Apache and possibly others)
 #Note: run 'perl t/support.t matrix' to see what support is currently available

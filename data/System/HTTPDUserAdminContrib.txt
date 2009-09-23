@@ -14,6 +14,9 @@ You receive maximal performance benefit by using the =SQL= mode, and ensuring ={
 
 See the Extensions | HTTPDUserAdminContrib section of =configure= to set up the specific options.
 
+If =$Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB}= is left unset, or set to an empty string, HTTPDUserAdminContrib will use the Topic based group definition system. 
+The type of the groupDB will be the same as that of the main DB.
+
 ---+++ Text file user store (.htpassword)
 If you are using the Text mode a once off converstion from an existing Foswiki htpasswd file must be done, due to differences in the way that email addresses are stored.
 

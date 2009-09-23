@@ -123,7 +123,8 @@ Break circular references.
 sub finish {
     my $this = shift;
     $this->SUPER::finish();
-    $this->{userDatabase}->commit();
+#don't do this - we don't want to write the .htpasswd file every time we open it for reading.
+#    $this->{userDatabase}->commit();
     undef $this->{userDatabase};
 }
 
@@ -147,6 +148,7 @@ sub readOnly {
             return 1;
         }      
     }
+    #TODO: use the flags...
 
     $this->{session}->enterContext('passwords_modifyable');
     return 0;
@@ -191,6 +193,7 @@ sub removeUser {
     try {
         $r = $this->{userDatabase}->delete( $login );
         #$this->{error} = $this->{apache}->error() unless (defined($r));        
+	$this->{userDatabase}->commit();
     } catch Error::Simple with {
         $this->{error} = 'problem deleting user';
     };
@@ -238,6 +241,7 @@ sub setPassword {
         } else {
             $added = $this->{userDatabase}->add( $login, $newPassU );
         }
+	$this->{userDatabase}->commit();
         $this->{error} = undef;
     } catch Error::Simple with {
         $this->{error} = 'problem changing password';
@@ -270,6 +274,7 @@ sub setField {
     my( $this, $login, $fieldname, $value) = @_;
 	return unless ($this->{userDatabase}->exists($login));
     my $r = $this->{userDatabase}->update($login, undef,  {$fieldname=>$value} );
+    $this->{userDatabase}->commit();
 	return $r;
 }
 
