@@ -175,6 +175,7 @@ format="$e"
 	 size="20"
 }% %FORMELEMENT{type="hidden" name="action" default="register"
 }%  |  %FORMELEMENT{
+       name="submit"
 	 type="submit"
 	 buttonlabel="Submit"
 }% %ENDFORM%|%ENDSECTION{"register_new"}%
