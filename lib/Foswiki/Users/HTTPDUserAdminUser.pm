@@ -266,7 +266,7 @@ sub fetchField {
     my( $this, $login, $fieldname) = @_;
 	return unless ($this->{userDatabase}->exists($login));
 	#my $settings = $this->{userDatabase}->get_fields(-user=>$login);
-	my $settings = $this->{userDatabase}->fetch($login, ('emails'));	
+	my $settings = $this->{userDatabase}->fetch($login, ($fieldname));	
 	#use Data::Dumper;
 	#print STDERR "\nsettings . ".$settings." ..".Dumper($settings, keys(%{$settings}));
 	

@@ -278,7 +278,7 @@ sub getWikiName {
     } else {
         # If the mapping isn't enabled there's no point in loading it
     }
-    
+
     unless ($wikiname) {
         #sanitise the generated WikiName - fix up email addresses and stuff
         $wikiname = getLoginName( $this, $cUID );
@@ -608,12 +608,12 @@ sub eachGroupMember {
             my $cuid = $this->getCanonicalUserID($ident);	#login
 		if (defined($cuid)) {
 	            push(@cuids, $cuid);
-			print STDERR "pushing $cuid ($ident) onto groupmembers for $group\n";
+			#print STDERR "pushing $cuid ($ident) onto groupmembers for $group\n";
 		} else {
 			my $users = $this->findUserByWikiName($ident);
 			foreach my $ident (@$users) {
 		            push(@cuids, $ident );
-				print STDERR "pushing $ident onto groupmembers for $group\n";
+				#print STDERR "pushing $ident onto groupmembers for $group\n";
 			}
 		}
         }
@@ -682,7 +682,7 @@ sub eachMembership {
 
     my $it = $this->eachGroup();
     $it->{filter} = sub {
-        print STDERR "----- is $user in the $_[0] group?";
+        #print STDERR "----- is $user in the $_[0] group?";
         $this->isInGroup($user, $_[0]);
     };
     return $it;
@@ -732,7 +732,7 @@ sub isInGroup {
     
     return 1 if ($this->{groupDatabase}->exists($group, $user));
     my $wikiname = $this->getWikiName($user);
-    return 1 if ($this->{groupDatabase}->exists($group, $wikiname ));
+    return 1 if (defined($wikiname) and ($this->{groupDatabase}->exists($group, $wikiname )));
     
     #now for nested groups :/
     my $it = $this->eachGroupMember($group);
