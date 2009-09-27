@@ -35,7 +35,7 @@ redirectto="%WEB%.%TOPIC%"
    pagesize="%PAGESIZE%"
    showpage="1" 
    header="| ** | *Wikiname* | *Login*| *HomePage* | *Emails* | *Groups* |$n"
-   format="| $percntINCLUDE{$quot%WEB%.%TOPIC%$quot section=$quotresetpassword$quot USERLOGIN=$quot$username$quot}$percnt | $wikiusername | =$username= | $percntFORMFIELD{
+   format="| $percntINCLUDE{$quot%WEB%.%TOPIC%$quot section=$quotresetpassword$quot USERLOGIN=$quot$username$quot}$percnt | $wikiusername | =$username= | %NOP%$percntFORMFIELD{
 	$quotHomePage$quot topic=$quot%USERSWEB%.$wikiname$quot
 }$percnt | $emails | $groups |"
    footer="$n|     $previouspage  page: $pagenumber $nextpage||||||"
