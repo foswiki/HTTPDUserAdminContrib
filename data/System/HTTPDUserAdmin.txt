@@ -13,7 +13,7 @@ background-color: gray;
 #foswikiUserManagerUI td[colspan] {
 background: lightgrey;
 }
-#foswikiUserManagerUI .foswikiNewLink {
+#foswikiUserManagerUI td[colspan] .foswikiNewLink {
 display:none;
 }
 </style>
@@ -35,9 +35,9 @@ redirectto="%WEB%.%TOPIC%"
    pagesize="16"
    showpage="1" 
    header="| ** | *Wikiname* | *Login*| *HomePage* | *Emails* | *Groups* |$n"
-   format="| $percntINCLUDE{$quot%WEB%.%TOPIC%$quot section=$quotresetpassword$quot USERLOGIN=$quot$username$quot}$percnt | $wikiusername | =$username= | %NOP%%FORMFIELD{
-	"HomePage" topic="%USERSWEB%.%ITEM%"
-}% | $emails | $groups |"
+   format="| $percntINCLUDE{$quot%WEB%.%TOPIC%$quot section=$quotresetpassword$quot USERLOGIN=$quot$username$quot}$percnt | $wikiusername | =$username= | $percntFORMFIELD{
+	$quotHomePage$quot topic=$quot%USERSWEB%.$wikiname$quot
+}$percnt | $emails | $groups |"
    footer="$n| $previouspage  $pagenumber $nextpage||||||"
 }%
 |<div style="text-align:right" > __This text will be sent to users in their "reset" e-mail.__ The login name and password will be filled in automatically.  %FORMELEMENT{
@@ -195,5 +195,8 @@ format="$e"
 	 else="Registration has been disabled - Please ask %WIKIWEBMASTER% to check the logs."
 }% ||%IF{"$ ALLOWLOGINNAME" then="|"}%||%ENDSECTION{"no_registration"}%
 </verbatim>
+
+   * Set ALLOWTOPICVIEW = %USERSWEB%.AdminGroup
+   * Set ALLOWTOPICCHANGE = %USERSWEB%.AdminGroup
 
 </div>

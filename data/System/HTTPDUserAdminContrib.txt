@@ -17,6 +17,12 @@ See the Extensions | HTTPDUserAdminContrib section of =configure= to set up the 
 If =$Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB}= is left unset, or set to an empty string, HTTPDUserAdminContrib will use the Topic based group definition system. 
 The type of the groupDB will be the same as that of the main DB.
 
+---++ User administration User interface.
+Additionally, !HTTPDUserAdminContrib contains a new =USERLIST= Macro which can be used by Admin users to list (with pagaing) all the registered users in the Foswiki.
+
+The %SYSTEMWEB%.HTTPDUserAdmin topic can be used by an Admin to register new users, and to reset their passwords.
+This is especially relevant to invite only Foswikis.
+
 ---+++ Text file user store (.htpassword)
 If you are using the Text mode a once off converstion from an existing Foswiki htpasswd file must be done, due to differences in the way that email addresses are stored.
 
@@ -24,6 +30,9 @@ run =perl -pi~ -e "s/$([^:]*):([^:]*):(.*)^/$1:$2:emails=$3/g" foswiki/data/.htp
 
 From there you can use that file in the =Text= =DBType=, use =dbmmanage= to import it to a DBM file, or run a similar tool to import it into your database.
 ---+++ DBM mode
+__Not tested for a while__
+
+DBM files are supported by apache, and are much more scalable than the linear text file based Topic user mapping and htpassword file.
 
 ---+++ SQL mode (DBI)
 This Contrib will not create the database setup for you, you will need to have an existing database, 
