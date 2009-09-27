@@ -32,13 +32,13 @@ redirectto="%WEB%.%TOPIC%"
 }% 
 %USERLIST{
    exclude="WikiGuest,AdminUser,ProjectContributor,RegistrationAgent,UnknownUser" 
-   pagesize="16"
+   pagesize="%PAGESIZE%"
    showpage="1" 
    header="| ** | *Wikiname* | *Login*| *HomePage* | *Emails* | *Groups* |$n"
    format="| $percntINCLUDE{$quot%WEB%.%TOPIC%$quot section=$quotresetpassword$quot USERLOGIN=$quot$username$quot}$percnt | $wikiusername | =$username= | $percntFORMFIELD{
 	$quotHomePage$quot topic=$quot%USERSWEB%.$wikiname$quot
 }$percnt | $emails | $groups |"
-   footer="$n| $previouspage  $pagenumber $nextpage||||||"
+   footer="$n|     $previouspage  page: $pagenumber $nextpage||||||"
 }%
 |<div style="text-align:right" > __This text will be sent to users in their "reset" e-mail.__ The login name and password will be filled in automatically.  %FORMELEMENT{
  name="Introduction" 
@@ -261,5 +261,6 @@ return sOut;
 
    * Set ALLOWTOPICVIEW = %USERSWEB%.AdminGroup
    * Set ALLOWTOPICCHANGE = %USERSWEB%.AdminGroup
+   * Set PAGESIZE = %URLPARAM{"pagesize" default="16"}%
 
 </div>
