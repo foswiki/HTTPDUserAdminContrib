@@ -777,7 +777,11 @@ sub USERLIST {
                 last;
             }
             my $login = $this->getLoginName($cuid);
-            my $result = '%USERINFO{"'.$login.'" format="'.$format.'"}%';
+            #my $result = '%USERINFO{"'.$login.'" format="'.$format.'"}%';
+            my $result = $session->USERINFO({
+                                                                _DEFAULT => $login,
+                                                                format => $format
+                                                                    });
             push(@results, $result);
         }  else {
             $previousidx = $idx; #there is a non-excluded previous element
@@ -812,7 +816,9 @@ sub USERLIST {
     $result =~ s/\$nextpage/$nextpage/ge;
     
     $result =~ s/\$sep/$separator/ge;
-    $result =~ s/\$n/\n/g;
+
+    $result = Foswiki::expandStandardEscapes($result);
+   
     return $result;
 }
 

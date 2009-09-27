@@ -1,0 +1,198 @@
+%META:TOPICINFO{author="BaseUserMapping_333" date="1253713605" format="1.1" version="1.7"}%
+
+<style>
+#foswikiUserCreatorUI,
+#foswikiUserManagerUI {
+border:4px solid gray;
+width:99%;
+}
+.foswikiTable th {
+background-color: gray;
+}
+#foswikiUserCreatorUI td[colspan],
+#foswikiUserManagerUI td[colspan] {
+background: lightgrey;
+}
+#foswikiUserManagerUI .foswikiNewLink {
+display:none;
+}
+</style>
+
+%STARTFORM{
+name="useradmin_%USERLOGIN%"
+action="%SCRIPTURL{manage}%/%WEB%/%TOPIC%"
+sep=" "
+redirectto="%WEB%.%TOPIC%"
+}% 
+%TABLE{tablewidth="99%"  columnwidths="3%,10%,10%,10%,15%,60%" id="foswikiUserManagerUI"}%
+ %INCLUDE{
+	"%WEB%.%TOPIC%"
+	section="usertoolbar"
+	warn="off"
+}% 
+%USERLIST{
+   exclude="WikiGuest,AdminUser,ProjectContributor,RegistrationAgent,UnknownUser" 
+   pagesize="16"
+   showpage="1" 
+   header="| ** | *Wikiname* | *Login*| *HomePage* | *Emails* | *Groups* |$n"
+   format="| $percntINCLUDE{$quot%WEB%.%TOPIC%$quot section=$quotresetpassword$quot USERLOGIN=$quot$username$quot}$percnt | $wikiusername | =$username= | %NOP%%FORMFIELD{
+	"HomePage" topic="%USERSWEB%.%ITEM%"
+}% | $emails | $groups |"
+   footer="$n| $previouspage  $pagenumber $nextpage||||||"
+}%
+|<div style="text-align:right" > __This text will be sent to users in their "reset" e-mail.__ The login name and password will be filled in automatically.  %FORMELEMENT{
+ name="Introduction" 
+ value="Welcome! The site is ready for your use. Please use the login name and password listed below and contact me if you have any questions." 
+ type="textarea" 
+ rows="5"
+ cols="80"
+ }%%FORMELEMENT{
+name="reset_%USERLOGIN%" value="Reset password" type="hidden" 
+ }% </div>||||||
+ %ENDFORM%
+ 
+
+%TABLE{tablewidth="99%"  columnwidths="3%,10%,10%,10%,15%,60%" id="foswikiUserCreatorUI"}%
+%INCLUDE{
+	"%WEB%.%TOPIC%"
+	section="%IF{"
+				    defined 'item' OR 
+				    NOT context authenticated OR
+				    NOT context registration_supported OR
+				    NOT context registration_enabled
+			   " 
+			   then="no_registration" 
+			   else="register_new"}%"
+	warn="off"
+}%
+
+
+<div style="display:none;">
+<verbatim>
+%STARTSECTION{"resetpassword"}% <INPUT TYPE="radio" NAME="LoginName" value="%USERLOGIN%">%ENDSECTION{"resetpassword"}%
+
+#TODO: <form action='%FILTERACTION%'><input type='text' name='filter' > <input type='submit' value='filter' ><form>
+%STARTSECTION{"usertoolbar"}%| <h5> User Tools :  \
+[[%CREATEUSER%][<img src="%PUBURLPATH%/System/FamFamFamSilkIcons/user_add.png" /> Add user]]  \
+[[%CREATEUSER%][Edit]]  \
+%FORMELEMENT{
+name="action"
+value="resetPassword"
+type="submit"
+format="$e"
+}% \
+[[%CREATEUSER%][Suspend]]  \
+[[%CREATEUSER%][Delete]] \
+ [[%EDITGROUP%][Edit group]]  \
+ </h5> ||||||%ENDSECTION{"usertoolbar"}%
+</verbatim>
+
+---+++ view item format
+<verbatim>
+%STARTSECTION{"view_item"}%|\
+[[%USERSWEB%.%ITEM%][%ITEM%]]        |\
+%USERINFO{ "%ITEM%" format="%IF{"$ ALLOWLOGINNAME" then=" =$username=" else=" "}%" 
+}% %IF{"$ ALLOWLOGINNAME" then="|"}% %USERINFO{ 
+	"%ITEM%" format="$emails" 
+}%   | %NOP%%FORMFIELD{
+	"HomePage" topic="%USERSWEB%.%ITEM%"
+}% | %USERINFO{ 
+	"%ITEM%" format="$groups " 
+}% | %ENDSECTION{"view_item"}%
+	  [[%SCRIPTURL{view}%/%BASEWEB%/%BASETOPIC%?item=%ITEM%;state=%URLPARAM{"state" default="*"}%][%ICON{uweb-bo}%]]  |
+</verbatim>
+
+---+++ edit item format
+<verbatim>
+%STARTSECTION{"register_new"}%| <h3>Create User</h3> |%IF{"$ ALLOWLOGINNAME" then="|"}%||||
+| %STARTFORM{
+	 name="register%TOPIC%"
+	 action="%SCRIPTURLPATH{"register"}%/%BASEWEB%/%BASETOPIC%"
+	 method="POST"
+	 redirectto="%BASEWEB%.%BASETOPIC%"
+	 sep=" "
+	 showerrors="off"
+	 validate="on"
+}% %FORMELEMENT{
+	 name="Twk1FirstName"
+	 mandatory="on"
+	 format="<span class='formValue'>$t  $e </span>%BR%"
+	 default=""
+	 type="text"
+	 title="FirstName"
+	 size="16"
+	 onBlur ="this.form.Twk1WikiName.value=capitalise(this.value)+capitalise(this.form.Twk1LastName.value)"
+}% %FORMELEMENT{
+	 name="Twk1LastName"
+	 mandatory="on"
+	 format="<span class='formValue'>$t  $e </span>%BR%"
+	 default=""
+	 type="text"
+	 title="LastName"
+	 size="16"
+	 onBlur ="this.form.Twk1WikiName.value=capitalise(this.form.Twk1FirstName.value)+capitalise(this.value)"
+}% %FORMELEMENT{
+	 name="Twk1WikiName"
+	 mandatory="on"
+	 format="<span class='formValue'>$t  $e </span>%BR%"
+	 default=""
+	 type="text"
+	 title="WikiName"
+	 size="16"
+}% %IF{"$ ALLOWLOGINNAME" then="|"}% %FORMELEMENT{
+	 name="%IF{"$ ALLOWLOGINNAME" then="Twk1LoginName" else="hiddenLoginName"}%"
+	 %IF{"$ ALLOWLOGINNAME" then="" else="hidden"}%mandatory="on"
+	 format="<span class='formValue'>$t  $e </span>"
+	 default=""
+	 type="%IF{"$ ALLOWLOGINNAME" then="text" else="hidden"}%"
+	 title="login"
+	 size="16"
+}% | %FORMELEMENT{
+	 name="Twk0HomePage"
+	 mandatory="on"
+	 format="<span class='formValue'>$t  $e </span>"
+	 default="%MAINWEB%"
+	 type="select"
+	 options="%WEBLIST{"$name" webs="public" separator=","}%"
+	 title="HomePage"
+	 size="1"
+}% | %FORMELEMENT{
+	 name="Twk1Email"
+	 mandatory="on"
+	 format="<span class='formValue'>$t  $e </span>"
+	 default=""
+	 type="text"
+	 title="Email"
+	 size="20"
+}% %FORMERROR{"register%TOPIC%"
+}% |  %FORMELEMENT{
+	 name="Twk0Group"
+	 NOTmandatory="on"
+	 format="<span class='formValue'>$t  $e </span>"
+	 default=""
+	 type="hidden"
+	 title="Group"
+	 size="20"
+}% %FORMELEMENT{type="hidden" name="action" default="register"
+}%  |  %FORMELEMENT{
+	 type="submit"
+	 buttonlabel="Submit"
+}% %ENDFORM%|%ENDSECTION{"register_new"}%
+
+
+</verbatim>
+
+---+++ no_registration
+<verbatim>
+%STARTSECTION{"no_registration"}%| <h3>%IF{
+					     "context authenticated" 
+					     then="No Registration" 
+					     else=""
+							       }%</h3> %IF{
+	"context registration_supported" 
+	 then="%IF{"context registration_enabled" then="" else="registration has been temporarily disabled - please contact %WIKIWEBMASTER%"}%"
+	 else="Registration has been disabled - Please ask %WIKIWEBMASTER% to check the logs."
+}% ||%IF{"$ ALLOWLOGINNAME" then="|"}%||%ENDSECTION{"no_registration"}%
+</verbatim>
+
+</div>

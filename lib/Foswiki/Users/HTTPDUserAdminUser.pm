@@ -237,7 +237,9 @@ sub setPassword {
     my $added = 0;
     try {
         if ($this->{userDatabase}->exists( $login) ) {
-            $added = $this->{userDatabase}->update( $login, $newPassU );
+            #$added = $this->{userDatabase}->update( $login, $newPassU );
+	    my $settings = $this->{userDatabase}->fetch($login, ('emails'));
+	    $added = $this->{userDatabase}->update($login, $newPassU, $settings);
         } else {
             $added = $this->{userDatabase}->add( $login, $newPassU );
         }
@@ -263,8 +265,8 @@ sub isManagingEmails {
 sub fetchField {
     my( $this, $login, $fieldname) = @_;
 	return unless ($this->{userDatabase}->exists($login));
-	my $settings = $this->{userDatabase}->fetch($login, ($fieldname));
-	
+	#my $settings = $this->{userDatabase}->get_fields(-user=>$login);
+	my $settings = $this->{userDatabase}->fetch($login, ('emails'));	
 	#use Data::Dumper;
 	#print STDERR "\nsettings . ".$settings." ..".Dumper($settings, keys(%{$settings}));
 	
@@ -273,16 +275,20 @@ sub fetchField {
 sub setField {
     my( $this, $login, $fieldname, $value) = @_;
 	return unless ($this->{userDatabase}->exists($login));
-    my $r = $this->{userDatabase}->update($login, undef,  {$fieldname=>$value} );
+    #my $r = $this->{userDatabase}->update($login, undef,  {$fieldname=>$value} );
+    	    my $settings = $this->{userDatabase}->fetch($login, ('emails'));
+    $settings->{$fieldname} = $value;
+    $this->{userDatabase}->update($login, undef, $settings);
+
     $this->{userDatabase}->commit();
-	return $r;
+	return $value;
 }
 
 # emails are stored in extra info field as a ; separated list
 sub getEmails {
     my( $this, $login) = @_;
 	return unless ($this->{userDatabase}->exists($login));
-	my $setting = fetchField($this, $login, 'emails');
+	my $setting = fetchField($this, $login, 'emails') || '';
 	
     my @r = split(/;/, $setting);
     $this->{error} = undef;
