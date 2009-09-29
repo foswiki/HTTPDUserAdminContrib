@@ -35,7 +35,7 @@ redirectto="%WEB%.%TOPIC%"
    pagesize="%PAGESIZE%"
    showpage="1" 
    header="| ** | *Wikiname* | *Login*| *HomePage* | *Emails* | *Groups* |$n"
-   format="| $percntINCLUDE{$quot%WEB%.%TOPIC%$quot section=$quotresetpassword$quot USERLOGIN=$quot$username$quot}$percnt | $wikiusername | =$username= | %NOP%$percntFORMFIELD{
+   format="| <INPUT TYPE='radio' NAME='LoginName' value='%USERLOGIN%'> | $wikiusername | =$username= | %NOP%$percntFORMFIELD{
 	$quotHomePage$quot topic=$quot%USERSWEB%.$wikiname$quot
 }$percnt | $emails | $groups |"
    footer="$n|     $previouspage  page: $pagenumber $nextpage||||||"
@@ -69,8 +69,6 @@ name="reset_%USERLOGIN%" value="Reset password" type="hidden"
 
 <div style="display:none;">
 <verbatim>
-%STARTSECTION{"resetpassword"}% <INPUT TYPE="radio" NAME="LoginName" value="%USERLOGIN%">%ENDSECTION{"resetpassword"}%
-
 #TODO: <form action='%FILTERACTION%'><input type='text' name='filter' > <input type='submit' value='filter' ><form>
 %STARTSECTION{"usertoolbar"}%| <h5> User Tools :  \
 [[%CREATEUSER%][<img src="%PUBURLPATH%/System/FamFamFamSilkIcons/user_add.png" /> Add user]]  \
@@ -78,6 +76,12 @@ name="reset_%USERLOGIN%" value="Reset password" type="hidden"
 %FORMELEMENT{
 name="action"
 value="resetPassword"
+type="submit"
+format="$e"
+}% \
+%FORMELEMENT{
+name="action"
+value="deleteUserAccount"
 type="submit"
 format="$e"
 }% \

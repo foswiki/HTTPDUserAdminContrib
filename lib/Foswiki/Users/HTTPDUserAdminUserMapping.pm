@@ -100,7 +100,7 @@ sub new {
         $Foswiki::cfg{Register}{EnableNewUserRegistration} = 0;
     }
     
-    Foswiki::Func::registerTagHandler( 'USERLIST', \&USERLIST );
+    Foswiki::registerTagHandler( 'USERLIST', \&USERLIST );
 
     return $this;
 }
