@@ -1,5 +1,65 @@
 %META:TOPICINFO{author="BaseUserMapping_333" date="1253713605" format="1.1" version="1.7"}%
 
+<script language="javascript">
+function capitalise(name)
+{
+var sIn = name;
+var sOut = '';
+var chgUpper = true;
+for ( var i = 0; i < sIn.length; i++ ) {
+ var ch = sIn.charAt( i );
+ var chVal = ch.charCodeAt(0);
+ var ch2 = '';
+ if( (chVal==192) || (chVal==193) || (chVal==194) || (chVal==195) ) { ch = 'A'; }
+ if( chVal==196) { ch = 'A'; ch2 = 'E'; }
+ if( chVal==197) { ch = 'A'; ch2 = 'A'; }
+ if( chVal==198) { ch = 'A'; ch2 = 'E'; }
+ if( chVal==199) { ch = 'C'; }
+ if( (chVal==200) || (chVal==201) || (chVal==202) || (chVal==203) ) { ch = 'E'; }
+ if( (chVal==204) || (chVal==205) || (chVal==206) || (chVal==207) ) { ch = 'I'; }
+ if( chVal==208) { ch = 'd'; }
+ if( chVal==209) { ch = 'N'; }
+ if( (chVal==210) || (chVal==211) || (chVal==212) || (chVal==213) ) { ch = 'O'; }
+ if( chVal==214) { ch = 'O'; ch2 = 'E'; }
+ if( chVal==216) { ch = 'O'; ch2 = 'E'; }
+ if( (chVal==217) || (chVal==218) || (chVal==219) ) { ch = 'U'; }
+ if( chVal==220) { ch = 'U'; ch2 = 'E'; }
+ if( chVal==221) { ch = 'Y'; }
+ if( chVal==222) { ch = 'P'; }
+ if( chVal==223) { ch = 's'; ch2 = 's'; }
+ if( (chVal==224) || (chVal==225) || (chVal==226) || (chVal==227) ) { ch = 'a'; }
+ if( chVal==228) { ch = 'a'; ch2 = 'e'; }
+ if( chVal==229) { ch = 'a'; ch2 = 'a'; }
+ if( chVal==230) { ch = 'a'; ch2 = 'e'; }
+ if( chVal==231) { ch = 'c'; }
+ if( (chVal==232) || (chVal==233) || (chVal==234) || (chVal==235) ) { ch = 'e'; }
+ if( (chVal==236) || (chVal==237) || (chVal==238) || (chVal==239) ) { ch = 'i'; }
+ if( chVal==240) { ch = 'd'; }
+ if( chVal==241) { ch = 'n'; }
+ if( (chVal==242) || (chVal==243) || (chVal==244) || (chVal==245) ) { ch = 'o'; }
+ if( chVal==246) { ch = 'o'; ch2 = 'e'; }
+ if( chVal==248) { ch = 'o'; ch2 = 'e'; }
+ if( (chVal==249) || (chVal==250) || (chVal==251) ) { ch = 'u'; }
+ if( chVal==252) { ch = 'u'; ch2 = 'e'; }
+ if( chVal==253) { ch = 'y'; }
+ if( chVal==254) { ch = 'p'; }
+ if( chVal==255) { ch = 'y'; }
+ if( ch!=' ' ) {
+  if( chgUpper ) {
+   ch = ch.toUpperCase(); chgUpper = false; 
+  } 
+  sOut+=ch;
+  if( ch2!='') {
+   sOut+=ch2; 
+  }
+ } else {
+  chgUpper = true; 
+ } 
+}
+return sOut;
+}
+</script>
+
 <style>
 #foswikiUserCreatorUI,
 #foswikiUserManagerUI {
@@ -25,11 +85,6 @@ sep=" "
 redirectto="%WEB%.%TOPIC%"
 }% 
 %TABLE{tablewidth="99%"  columnwidths="3%,10%,10%,10%,15%,60%" id="foswikiUserManagerUI"}%
- %INCLUDE{
-	"%WEB%.%TOPIC%"
-	section="usertoolbar"
-	warn="off"
-}% 
 %USERLIST{
    exclude="WikiGuest,AdminUser,ProjectContributor,RegistrationAgent,UnknownUser" 
    pagesize="%PAGESIZE%"
@@ -40,7 +95,12 @@ redirectto="%WEB%.%TOPIC%"
 }$percnt | $emails | $groups |"
    footer="$n|     $previouspage  page: $pagenumber $nextpage||||||"
 }%
-|<div style="text-align:right" > __This text will be sent to users in their "reset" e-mail.__ The login name and password will be filled in automatically.  %FORMELEMENT{
+%INCLUDE{
+	"%WEB%.%TOPIC%"
+	section="usertoolbar"
+	warn="off"
+}% 
+| %TWISTYTOGGLE{id="resetPassword"}%  __This text will be sent to users in their "reset" e-mail.__ The login name and password will be filled in automatically.  %FORMELEMENT{
  name="Introduction" 
  value="Welcome! The site is ready for your use. Please use the login name and password listed below and contact me if you have any questions." 
  type="textarea" 
@@ -48,10 +108,13 @@ redirectto="%WEB%.%TOPIC%"
  cols="80"
  }%%FORMELEMENT{
 name="reset_%USERLOGIN%" value="Reset password" type="hidden" 
- }% </div>||||||
- %ENDFORM%
- 
-
+ }%%FORMELEMENT{
+name="action"
+value="resetPassword"
+type="submit"
+format="$e"
+}%  %ENDTWISTYTOGGLE%  ||||||
+%TWISTYTOGGLE{id="createUser"}%
 %TABLE{tablewidth="99%"  columnwidths="3%,10%,10%,10%,15%,60%" id="foswikiUserCreatorUI"}%
 %INCLUDE{
 	"%WEB%.%TOPIC%"
@@ -65,34 +128,29 @@ name="reset_%USERLOGIN%" value="Reset password" type="hidden"
 			   else="register_new"}%"
 	warn="off"
 }%
-
-
-<div style="display:none;">
-<verbatim>
+%ENDTWISTYTOGGLE{id="createUser"}%
+%ENDFORM%
+ 
+<verbatim style="display:none;">
 #TODO: <form action='%FILTERACTION%'><input type='text' name='filter' > <input type='submit' value='filter' ><form>
-%STARTSECTION{"usertoolbar"}%| <h5> User Tools :  \
+%STARTSECTION{"usertoolbar"}%| <h5> User Tools :  %TWISTYBUTTON{
+ id="createUser"
+  link="<img src='%USERICONURL%' /> %MAKETEXT{"Create a new User"}%"
+}% %VBAR% %TWISTYBUTTON{id="resetPassword" link="reset password"}% \
 [[%CREATEUSER%][<img src="%PUBURLPATH%/System/FamFamFamSilkIcons/user_add.png" /> Add user]]  \
 [[%CREATEUSER%][Edit]]  \
 %FORMELEMENT{
 name="action"
-value="resetPassword"
-type="submit"
-format="$e"
-}% \
-%FORMELEMENT{
-name="action"
 value="deleteUserAccount"
-type="submit"
+type="hidden"
 format="$e"
 }% \
 [[%CREATEUSER%][Suspend]]  \
 [[%CREATEUSER%][Delete]] \
  [[%EDITGROUP%][Edit group]]  \
  </h5> ||||||%ENDSECTION{"usertoolbar"}%
-</verbatim>
 
 ---+++ view item format
-<verbatim>
 %STARTSECTION{"view_item"}%|\
 [[%USERSWEB%.%ITEM%][%ITEM%]]        |\
 %USERINFO{ "%ITEM%" format="%IF{"$ ALLOWLOGINNAME" then=" =$username=" else=" "}%" 
@@ -104,10 +162,8 @@ format="$e"
 	"%ITEM%" format="$groups " 
 }% | %ENDSECTION{"view_item"}%
 	  [[%SCRIPTURL{view}%/%BASEWEB%/%BASETOPIC%?item=%ITEM%;state=%URLPARAM{"state" default="*"}%][%ICON{uweb-bo}%]]  |
-</verbatim>
 
 ---+++ edit item format
-<verbatim>
 %STARTSECTION{"register_new"}%| <h3>Create User</h3> |%IF{"$ ALLOWLOGINNAME" then="|"}%||||
 | %STARTFORM{
 	 name="register%TOPIC%"
@@ -185,7 +241,6 @@ format="$e"
 }% %ENDFORM%|%ENDSECTION{"register_new"}%
 
 
-</verbatim>
 
 ---+++ no_registration
 <verbatim>
@@ -201,70 +256,14 @@ format="$e"
 </verbatim>
 
 
-<script language="javascript">
 <!--
-function capitalise(name)
-{
-var sIn = name;
-var sOut = '';
-var chgUpper = true;
-for ( var i = 0; i < sIn.length; i++ ) {
- var ch = sIn.charAt( i );
- var chVal = ch.charCodeAt(0);
- var ch2 = '';
- if( (chVal==192) || (chVal==193) || (chVal==194) || (chVal==195) ) { ch = 'A'; }
- if( chVal==196) { ch = 'A'; ch2 = 'E'; }
- if( chVal==197) { ch = 'A'; ch2 = 'A'; }
- if( chVal==198) { ch = 'A'; ch2 = 'E'; }
- if( chVal==199) { ch = 'C'; }
- if( (chVal==200) || (chVal==201) || (chVal==202) || (chVal==203) ) { ch = 'E'; }
- if( (chVal==204) || (chVal==205) || (chVal==206) || (chVal==207) ) { ch = 'I'; }
- if( chVal==208) { ch = 'd'; }
- if( chVal==209) { ch = 'N'; }
- if( (chVal==210) || (chVal==211) || (chVal==212) || (chVal==213) ) { ch = 'O'; }
- if( chVal==214) { ch = 'O'; ch2 = 'E'; }
- if( chVal==216) { ch = 'O'; ch2 = 'E'; }
- if( (chVal==217) || (chVal==218) || (chVal==219) ) { ch = 'U'; }
- if( chVal==220) { ch = 'U'; ch2 = 'E'; }
- if( chVal==221) { ch = 'Y'; }
- if( chVal==222) { ch = 'P'; }
- if( chVal==223) { ch = 's'; ch2 = 's'; }
- if( (chVal==224) || (chVal==225) || (chVal==226) || (chVal==227) ) { ch = 'a'; }
- if( chVal==228) { ch = 'a'; ch2 = 'e'; }
- if( chVal==229) { ch = 'a'; ch2 = 'a'; }
- if( chVal==230) { ch = 'a'; ch2 = 'e'; }
- if( chVal==231) { ch = 'c'; }
- if( (chVal==232) || (chVal==233) || (chVal==234) || (chVal==235) ) { ch = 'e'; }
- if( (chVal==236) || (chVal==237) || (chVal==238) || (chVal==239) ) { ch = 'i'; }
- if( chVal==240) { ch = 'd'; }
- if( chVal==241) { ch = 'n'; }
- if( (chVal==242) || (chVal==243) || (chVal==244) || (chVal==245) ) { ch = 'o'; }
- if( chVal==246) { ch = 'o'; ch2 = 'e'; }
- if( chVal==248) { ch = 'o'; ch2 = 'e'; }
- if( (chVal==249) || (chVal==250) || (chVal==251) ) { ch = 'u'; }
- if( chVal==252) { ch = 'u'; ch2 = 'e'; }
- if( chVal==253) { ch = 'y'; }
- if( chVal==254) { ch = 'p'; }
- if( chVal==255) { ch = 'y'; }
- if( ch!=' ' ) {
-  if( chgUpper ) {
-   ch = ch.toUpperCase(); chgUpper = false; 
-  } 
-  sOut+=ch;
-  if( ch2!='') {
-   sOut+=ch2; 
-  }
- } else {
-  chgUpper = true; 
- } 
-}
-return sOut;
-}
-//-->
-</script>
-
    * Set ALLOWTOPICVIEW = %USERSWEB%.AdminGroup
    * Set ALLOWTOPICCHANGE = %USERSWEB%.AdminGroup
    * Set PAGESIZE = %URLPARAM{"pagesize" default="16"}%
 
-</div>
+   * Set USERICONURL = %IF{"istopic '%SYSTEMWEB%.FamFamFamSilkIcons'" 
+       then="%PUBURLPATH%/%SYSTEMWEB%/FamFamFamSilkIcons/user.png" 
+       else="%ICONURLPATH{"person"}%"
+     }%
+
+-->

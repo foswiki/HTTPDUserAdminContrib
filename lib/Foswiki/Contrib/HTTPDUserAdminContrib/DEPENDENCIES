@@ -1,6 +1,7 @@
 # Dependencies for HTTPDUserAdminContrib
 # Example:
 # Time::ParseDate,>=2003.0211,cpan,Required.
+Foswiki::Users::TopicUserMappingContrib,1,perl,Required
 HTTPD::UserAdmin,>=1.66,cpan,Required.
 HTTPD::GroupAdmin,>=1.66,cpan,Required.
 HTTPD::Authen,>=1.66,cpan,Required.
