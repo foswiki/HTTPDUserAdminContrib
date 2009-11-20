@@ -96,11 +96,11 @@ sub new {
     #'none' is a special case, as it means we're not actually using the password manager for
     # registration.
     if ($this->{passwords}->readOnly() && ($Foswiki::cfg{PasswordManager} ne 'none')) {
-        $session->writeWarning( 'TopicUserMapping has TURNED OFF EnableNewUserRegistration, because the password file is read only.' );
+        $session->writeWarning( 'HTTPDUserAdminMapping has TURNED OFF EnableNewUserRegistration, because the password file is read only.' );
         $Foswiki::cfg{Register}{EnableNewUserRegistration} = 0;
     }
     
-    Foswiki::registerTagHandler( 'USERLIST', \&USERLIST );
+    Foswiki::registerTagHandler( 'USERLIST', \&Foswiki::Users::HTTPDUserAdminUserMapping::USERLIST );
 
     return $this;
 }
@@ -251,7 +251,7 @@ topics, which may still be linked.
 
 sub removeUser {
     my( $this, $user ) = @_;
-    $this->ASSERT_IS_CANONICAL_USER_ID($user) if DEBUG;
+
     my $ln = $this->getLoginName( $user );
     $this->{passwords}->removeUser($ln);
 }
@@ -275,6 +275,11 @@ sub getWikiName {
     my $wikiname;
     if( $Foswiki::cfg{Register}{AllowLoginName} ) {
 	    $wikiname = $this->{passwords}->fetchField($cUID, $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField});
+	    unless ($wikiname) {
+		#this should only be used _if_ the topic mapper is used - 
+		#pass through to the topic mapper - bit risky tho
+		$wikiname = $this->SUPER::getWikiName($cUID);
+	    }
     } else {
         # If the mapping isn't enabled there's no point in loading it
     }
@@ -305,7 +310,6 @@ or not is determined by the password manager.
 sub userExists {
     my( $this, $cUID ) = @_;
     ASSERT($cUID) if DEBUG;
-    $this->ASSERT_IS_CANONICAL_USER_ID($cUID) if DEBUG;
 
     # Do this to avoid a password manager lookup
     return 1 if $cUID eq $this->{session}->{user};
@@ -380,7 +384,7 @@ Duplicates are removed from the list.
 
 sub getEmails {
     my( $this, $user, $seen ) = @_;
-    $this->ASSERT_IS_CANONICAL_USER_ID($user) if DEBUG;
+
 
     $seen ||= {};
 
@@ -422,7 +426,6 @@ user mapping manager is tried.
 sub setEmails {
     my $this = shift;
     my $user = shift;
-    $this->ASSERT_IS_CANONICAL_USER_ID($user) if DEBUG;
 
     $this->{passwords}->setEmails( $this->getLoginName( $user ), @_ );
 }
@@ -479,7 +482,7 @@ Returns 1 on success, undef on failure.
 
 sub checkPassword {
     my( $this, $userName, $pw ) = @_;
-    $this->ASSERT_IS_USER_LOGIN_ID($userName) if DEBUG;
+
     return $this->{passwords}->checkPassword( $userName, $pw );
 }
 
@@ -501,7 +504,7 @@ Otherwise returns 1 on success, undef on failure.
 
 sub setPassword {
     my( $this, $user, $newPassU, $oldPassU ) = @_;
-    $this->ASSERT_IS_CANONICAL_USER_ID($user) if DEBUG;
+
     return $this->{passwords}->setPassword(
         $this->getLoginName( $user ), $newPassU, $oldPassU);
 }
@@ -563,6 +566,8 @@ sub addUser {
             $wikiname = $login;
         }
         $this->{passwords}->setField($login, $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField}, $wikiname);
+#	    $wikiname = $this->{passwords}->fetchField($cUID, $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField});
+
     }
 
     my $user = getCanonicalUserID( $this, $login, 1 );
@@ -688,6 +693,127 @@ sub eachMembership {
     return $it;
 }
 
+
+=begin TML
+
+---++ ObjectMethod groupAllowsView($group) -> boolean
+
+returns 1 if the group is able to be viewed by the current logged in user
+
+implemented using topic VIEW permissions
+
+=cut
+
+sub groupAllowsView {
+    my $this = shift;
+    my $Group = shift;
+    
+    my $user = $this->{session}->{user};
+    return 1 if $this->{session}->{users}->isAdmin($user);
+
+#TODO: add cfg setting to govern this (username, groupname or somethign special indicating any groupmember)
+    return 1;
+}
+
+=begin TML
+
+---++ ObjectMethod groupAllowsChange($group) -> boolean
+
+returns 1 if the group is able to be modified by the current logged in user
+
+implemented using topic CHANGE permissions
+
+=cut
+
+sub groupAllowsChange {
+    my $this = shift;
+    my $Group = shift;
+    
+    my $user = $this->{session}->{user};
+    return 1 if $this->{session}->{users}->isAdmin($user);
+
+#TODO: add cfg setting to govern this (username, groupname or somethign special indicating any groupmember)
+    return 0;
+}
+
+=begin TML
+
+---++ ObjectMethod addToGroup( $cuid, $group, $create ) -> $boolean
+adds the user specified by the cuid to the group.
+If the group does not exist, it will return false and do nothing, unless the create flag is set.
+
+cuid _cannot_  be a groupname
+
+=cut
+
+sub addUserToGroup {
+    my ( $this, $cuid, $Group, $create ) = @_;
+    $Group = Foswiki::Sandbox::untaint( $Group,
+        \&Foswiki::Sandbox::validateTopicName );
+    return 0 unless ($this->groupAllowsChange($Group));
+    
+    my $user = $this->{session}->{user};
+
+#run this as calling user, if the registration is being run by an existing user
+# (often done by admins), else run as registration agent
+#TODO: extract this to the rego code - as we really should only allow magical group adding in specific circumstances? (or is this a pointless oddity, as any user can 'just' register a sock puppet, and then...?
+    my $usersObj = $this->{session}->{users};
+
+#$this->{session}->writeDebug($usersObj->getWikiName($user)."is TRYING to add $cuid to $groupTopic, as ".$usersObj->getWikiName($cuid)) if DEBUG;
+    if ( ( $usersObj->getWikiName($user) eq $Foswiki::cfg{DefaultUserWikiName} )
+        or ( $user eq $cuid ) )
+    {
+        $user =
+          $usersObj->findUserByWikiName(
+            $Foswiki::cfg{Register}{RegistrationAgentWikiName} );
+    }
+
+    if (
+        $usersObj->isGroup($Group) || $create
+      )
+    {
+        if ( $usersObj->isInGroup( $cuid, $Group ) ) {
+
+#TODO: not sure this is the right thing to do - it might make more sense to not expand the nested groups, and add a user if they're not listed here, that way we are able to not worry about subgroups changing.
+            return 1;    #user already in group, nothing to do
+        }
+	return $this->{groupDatabase}->add($cuid, $Group);
+    }
+    die 'not sure how we got here';
+}
+
+=begin TML
+
+---++ ObjectMethod removeFromGroup( $cuid, $group ) -> $boolean
+
+=cut
+
+sub removeUserFromGroup {
+    my ( $this, $cuid, $Group ) = @_;
+    $Group = Foswiki::Sandbox::untaint( $Group,
+        \&Foswiki::Sandbox::validateTopicName );
+
+    return unless ($this->groupAllowsChange($Group));
+    
+    my $user = $this->{session}->{user};
+
+#run this as calling user, if the registration is being run by an existing user
+# (often done by admins), else run as registration agent
+#TODO: extract this to the rego code - as we really should only allow magical group adding in specific circumstances? (or is this a pointless oddity, as any user can 'just' register a sock puppet, and then...?
+    my $usersObj = $this->{session}->{users};
+
+    if (
+        $usersObj->isGroup($Group)
+      )
+    {
+        if ( $usersObj->isInGroup( $cuid, $Group ) ) {
+    	return $this->{groupDatabase}->delete($cuid, $Group);
+        }
+    }
+    return 0;
+}
+
+
 =begin TML
 
 ---++ ObjectMethod isAdmin( $user ) -> $boolean
@@ -701,7 +827,6 @@ True if the user is an admin
 sub DONTNEEDTHIS_isAdmin {
     my( $this, $user ) = @_;
     my $isAdmin = 0;
-    $this->ASSERT_IS_CANONICAL_USER_ID($user) if DEBUG;
 
     #TODO: this might not apply now that we have BaseUserMapping - test
     if ($user eq $Foswiki::cfg{SuperAdminGroup}) {

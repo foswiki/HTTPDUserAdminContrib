@@ -44,6 +44,8 @@ see http://search.cpan.org/~lds/HTTPD-User-Manage-1.66/lib/HTTPD/UserAdmin.pm
 
 =cut
 
+my @datafields = ('emails', 'wikiname');
+
 sub new {
     my( $class, $session ) = @_;
 
@@ -238,7 +240,7 @@ sub setPassword {
     try {
         if ($this->{userDatabase}->exists( $login) ) {
             #$added = $this->{userDatabase}->update( $login, $newPassU );
-	    my $settings = $this->{userDatabase}->fetch($login, ('emails'));
+	    my $settings = $this->{userDatabase}->fetch($login, @datafields);
 	    $added = $this->{userDatabase}->update($login, $newPassU, $settings);
         } else {
             $added = $this->{userDatabase}->add( $login, $newPassU );
@@ -276,7 +278,7 @@ sub setField {
     my( $this, $login, $fieldname, $value) = @_;
 	return unless ($this->{userDatabase}->exists($login));
     #my $r = $this->{userDatabase}->update($login, undef,  {$fieldname=>$value} );
-    	    my $settings = $this->{userDatabase}->fetch($login, ('emails'));
+    	    my $settings = $this->{userDatabase}->fetch($login, @datafields);
     $settings->{$fieldname} = $value;
     $this->{userDatabase}->update($login, undef, $settings);
 
