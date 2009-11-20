@@ -87,6 +87,7 @@ INSERT INTO grouptable (name, username) VALUES ('SuperGroup', 'testuser8') ;
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Contrib Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  Nov 2009 | support the foswiki >= 1.1 %USERSWEB%.WikiGroups add and remove users from Group UI |
 |  Sep 2009 | add USERLIST tag to create a user administration userinterface, fix bug in Text and DBM types. |
 |  Sep 2009 | testing with windows and strawberry perl, fix for group definitions using WikiName rather than login, and enable nested groups |
 |  Jul 2009 | port to Foswiki |
