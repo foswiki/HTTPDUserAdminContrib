@@ -77,8 +77,6 @@ sub new {
     $this->{userDatabase} = new HTTPD::UserAdmin(%configuration);
 
 #	print STDERR "new HTTPDAuth".join(', ', $this->{userDatabase}->list())."\n" if ($Foswiki::cfg{HTTPDUserAdminContrib}{Debug});
-
-    $session->enterContext('passwords_managed');
     
     return $this;
 }
