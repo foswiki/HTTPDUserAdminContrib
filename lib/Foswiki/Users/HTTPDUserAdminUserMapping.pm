@@ -28,7 +28,8 @@ over-rides TopicUserMapping to store Groups outside topics.
 package Foswiki::Users::HTTPDUserAdminUserMapping;
 use Foswiki::Users::TopicUserMapping;
 use Foswiki::Func;
-use base 'Foswiki::Users::TopicUserMapping';
+use Foswiki::Users::TopicUserMapping;
+our @ISA = qw( Foswiki::Users::TopicUserMapping );
 
 use strict;
 use Assert;
