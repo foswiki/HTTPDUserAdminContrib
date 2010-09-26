@@ -40,7 +40,7 @@ redirectto="%WEB%.%TOPIC%"
    pagesize="%PAGESIZE%"
    showpage="1" 
    header="| ** | *Wikiname* | *Login*| *HomePage* | *Emails* | *Groups* |$n"
-   format="| <input type='radio' name='LoginName' value='$username'> | $wikiusername | =$username= | %NOP%$percntFORMFIELD{
+   format="| <input type='checkbox' name='LoginName' value='$username'> | $wikiusername | =$username= | %NOP%$percntFORMFIELD{
 	$quotHomePage$quot topic=$quot%USERSWEB%.$wikiname$quot
 }$percnt | $emails | $groups |"
    footer="$n|     $previouspage  page: $pagenumber $nextpage||||||"
