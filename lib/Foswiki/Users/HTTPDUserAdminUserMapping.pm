@@ -50,58 +50,75 @@ for any required foswiki services.
 =cut
 
 sub new {
-    my( $class, $session ) = @_;
+    my ( $class, $session ) = @_;
 
     my $this = $class->SUPER::new( $session, '' );
-    
-	my %configuration =  (
-			DBType =>					$Foswiki::cfg{HTTPDUserAdminContrib}{DBType} || 'Text',
-			Host =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Host} || '',
-			Port =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Port} || '',
-			DB =>						$Foswiki::cfg{HTTPDUserAdminContrib}{DB} || $Foswiki::cfg{Htpasswd}{FileName},
-			#uncommenting User seems to crash when using Text DBType :(
-			#User =>					$Foswiki::cfg{HTTPDUserAdminContrib}{User},
-			Auth =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Auth} || '',
-			Encrypt =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Encrypt} || 'crypt',
-			Locking =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Locking} || '',
-    #TODO: need to test the LOCKING - it seems to fail on my trunk, and when it does, give a server error
-			Path =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Path} || '',
-			Debug =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Debug},
-			Flags =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Flags} || '',
-			Driver =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Driver} || '',
-			Server =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Server},	#undef == go detect
-			GroupTable =>				$Foswiki::cfg{HTTPDUserAdminContrib}{GroupTable} || '',
-			NameField =>				$Foswiki::cfg{HTTPDUserAdminContrib}{UserNameField} || '',
-			GroupField =>			    $Foswiki::cfg{HTTPDUserAdminContrib}{GroupNameField} || '',
-			#Debug =>				1
-             );
 
-	$this->{configuration} = \%configuration;
-	my %groupCfg = %configuration;
-	if (defined($Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB}) 
-            and $Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB} ne '') {
-            $groupCfg{DB} = $Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB};
-            $this->{groupDatabase} = new HTTPD::GroupAdmin(%groupCfg);
-        }
-        
+    my %configuration = (
+        DBType => $Foswiki::cfg{HTTPDUserAdminContrib}{DBType}
+          || 'Text',
+        Host => $Foswiki::cfg{HTTPDUserAdminContrib}{Host}
+          || '',
+        Port => $Foswiki::cfg{HTTPDUserAdminContrib}{Port}
+          || '',
+        DB => $Foswiki::cfg{HTTPDUserAdminContrib}{DB}
+          || $Foswiki::cfg{Htpasswd}{FileName},
+
+        #uncommenting User seems to crash when using Text DBType :(
+        #User =>					$Foswiki::cfg{HTTPDUserAdminContrib}{User},
+        Auth    => $Foswiki::cfg{HTTPDUserAdminContrib}{Auth}    || '',
+        Encrypt => $Foswiki::cfg{HTTPDUserAdminContrib}{Encrypt} || 'crypt',
+        Locking => $Foswiki::cfg{HTTPDUserAdminContrib}{Locking} || '',
+
+#TODO: need to test the LOCKING - it seems to fail on my trunk, and when it does, give a server error
+        Path => $Foswiki::cfg{HTTPDUserAdminContrib}{Path} || '',
+        Debug  => $Foswiki::cfg{HTTPDUserAdminContrib}{Debug},
+        Flags  => $Foswiki::cfg{HTTPDUserAdminContrib}{Flags} || '',
+        Driver => $Foswiki::cfg{HTTPDUserAdminContrib}{Driver} || '',
+        Server =>
+          $Foswiki::cfg{HTTPDUserAdminContrib}{Server},    #undef == go detect
+        GroupTable => $Foswiki::cfg{HTTPDUserAdminContrib}{GroupTable}
+          || '',
+        NameField => $Foswiki::cfg{HTTPDUserAdminContrib}{UserNameField}
+          || '',
+        GroupField => $Foswiki::cfg{HTTPDUserAdminContrib}{GroupNameField}
+          || '',
+
+        #Debug =>				1
+    );
+
+    $this->{configuration} = \%configuration;
+    my %groupCfg = %configuration;
+    if ( defined( $Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB} )
+        and $Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB} ne '' )
+    {
+        $groupCfg{DB} = $Foswiki::cfg{HTTPDUserAdminContrib}{GroupDB};
+        $this->{groupDatabase} = new HTTPD::GroupAdmin(%groupCfg);
+    }
+
     my $implPasswordManager = $Foswiki::cfg{PasswordManager};
     $implPasswordManager = 'Foswiki::Users::Password'
-      if( $implPasswordManager eq 'none' );
+      if ( $implPasswordManager eq 'none' );
     eval "require $implPasswordManager";
     die $@ if $@;
-    $this->{passwords} = $implPasswordManager->new( $session );
-    
-    #TODO: need to assert that the pwd manager has the required methods - fetchField...
-    
-    #if password manager says sorry, we're read only today
-    #'none' is a special case, as it means we're not actually using the password manager for
-    # registration.
-    if ($this->{passwords}->readOnly() && ($Foswiki::cfg{PasswordManager} ne 'none')) {
-        $session->writeWarning( 'HTTPDUserAdminMapping has TURNED OFF EnableNewUserRegistration, because the password file is read only.' );
+    $this->{passwords} = $implPasswordManager->new($session);
+
+#TODO: need to assert that the pwd manager has the required methods - fetchField...
+
+#if password manager says sorry, we're read only today
+#'none' is a special case, as it means we're not actually using the password manager for
+# registration.
+    if ( $this->{passwords}->readOnly()
+        && ( $Foswiki::cfg{PasswordManager} ne 'none' ) )
+    {
+        $session->writeWarning(
+'HTTPDUserAdminMapping has TURNED OFF EnableNewUserRegistration, because the password file is read only.'
+        );
         $Foswiki::cfg{Register}{EnableNewUserRegistration} = 0;
     }
-    
-    Foswiki::registerTagHandler( 'USERLIST', \&Foswiki::Users::HTTPDUserAdminUserMapping::USERLIST );
+
+    Foswiki::registerTagHandler( 'USERLIST',
+        \&Foswiki::Users::HTTPDUserAdminUserMapping::USERLIST );
 
     return $this;
 }
@@ -120,12 +137,11 @@ sub finish {
     my $this = shift;
 
     $this->SUPER::finish();
-    if (defined($this->{groupDatabase})) {
+    if ( defined( $this->{groupDatabase} ) ) {
         $this->{groupDatabase}->commit();
         undef $this->{groupDatabase};
     }
 }
-
 
 =begin TML
 
@@ -148,23 +164,25 @@ to use for a given user (must be fast).
 =cut
 
 sub handlesUser {
-    my ($this, $cUID, $login, $wikiname) = @_;
+    my ( $this, $cUID, $login, $wikiname ) = @_;
 
-    if (defined $cUID && !length($this->{mapping_id})) {
+    if ( defined $cUID && !length( $this->{mapping_id} ) ) {
+
         # TopicUserMapping is special - for backwards compatibility, it assumes
         # responsibility for _all_ non BaseMapping users
-        # if you're needing to mix the TopicUserMapping with others, 
+        # if you're needing to mix the TopicUserMapping with others,
         # define $this->{mapping_id} = 'TopicUserMapping_';
         return 1;
-    } else {
+    }
+    else {
+
         # Used when (if) TopicUserMapping is subclassed
         return 1 if ( defined $cUID && $cUID =~ /^($this->{mapping_id})/ );
     }
 
-    return 1 if ($login && $this->getLoginName( $login ));
+    return 1 if ( $login && $this->getLoginName($login) );
     return 0;
 }
-
 
 =begin TML
 
@@ -180,16 +198,18 @@ characters, and must correspond 1:1 to the login name.
 =cut
 
 sub getCanonicalUserID {
-    my( $this, $login, $dontcheck ) = @_;
+    my ( $this, $login, $dontcheck ) = @_;
+
 #    print STDERR "\nTopicUserMapping::getCanonicalUserID($login, ".($dontcheck||'undef').")";
 
     unless ($dontcheck) {
-        return unless (_userReallyExists($this, $login));
+        return unless ( _userReallyExists( $this, $login ) );
     }
 
     $login = Foswiki::Users::mapLogin2cUID($login);
-    $login = $this->{mapping_id}.$login;
-#print STDERR " OK ($login)";
+    $login = $this->{mapping_id} . $login;
+
+    #print STDERR " OK ($login)";
     return $login;
 }
 
@@ -203,7 +223,7 @@ converts an internal cUID to that user's login
 =cut
 
 sub getLoginName {
-    my( $this, $user ) = @_;
+    my ( $this, $user ) = @_;
     ASSERT($user) if DEBUG;
 
     #can't call userExists - its recursive
@@ -213,12 +233,13 @@ sub getLoginName {
     $user =~ s/$this->{mapping_id}// if $this->{mapping_id};
 
     use bytes;
+
     # use bytes to ignore character encoding
     $user =~ s/_(\d\d)/chr($1)/ge;
     no bytes;
 
-    return unless (_userReallyExists($this, $user));
-    
+    return unless ( _userReallyExists( $this, $user ) );
+
     return $user;
 }
 
@@ -232,11 +253,13 @@ depending on the AllowLoginNames setting
 =cut
 
 sub _userReallyExists {
-    my( $this, $login ) = @_;
-    
-    my $pass = $this->{passwords}->fetchPass( $login );
-    return unless (defined($pass));
-    return if ("$pass" eq "0"); #login invalid... (TODO: what does that really mean)
+    my ( $this, $login ) = @_;
+
+    my $pass = $this->{passwords}->fetchPass($login);
+    return unless ( defined($pass) );
+    return
+      if ( "$pass" eq "0" )
+      ;    #login invalid... (TODO: what does that really mean)
     return 1;
 }
 
@@ -251,12 +274,11 @@ topics, which may still be linked.
 =cut
 
 sub removeUser {
-    my( $this, $user ) = @_;
+    my ( $this, $user ) = @_;
 
-    my $ln = $this->getLoginName( $user );
+    my $ln = $this->getLoginName($user);
     $this->{passwords}->removeUser($ln);
 }
-
 
 =begin TML
 
@@ -269,23 +291,29 @@ If there is no matching WikiName or LoginName, it returns undef.
 =cut
 
 sub getWikiName {
-    my ($this, $cUID) = @_;
+    my ( $this, $cUID ) = @_;
     ASSERT($cUID) if DEBUG;
-    ASSERT($cUID =~ /^$this->{mapping_id}/) if DEBUG;
+    ASSERT( $cUID =~ /^$this->{mapping_id}/ ) if DEBUG;
 
     my $wikiname;
-    if( $Foswiki::cfg{Register}{AllowLoginName} ) {
-	    $wikiname = $this->{passwords}->fetchField($cUID, $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField});
-	    unless ($wikiname) {
-		#this should only be used _if_ the topic mapper is used - 
-		#pass through to the topic mapper - bit risky tho
-		$wikiname = $this->SUPER::getWikiName($cUID);
-	    }
-    } else {
+    if ( $Foswiki::cfg{Register}{AllowLoginName} ) {
+        $wikiname =
+          $this->{passwords}->fetchField( $cUID,
+            $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField} );
+        unless ($wikiname) {
+
+            #this should only be used _if_ the topic mapper is used -
+            #pass through to the topic mapper - bit risky tho
+            $wikiname = $this->SUPER::getWikiName($cUID);
+        }
+    }
+    else {
+
         # If the mapping isn't enabled there's no point in loading it
     }
 
     unless ($wikiname) {
+
         #sanitise the generated WikiName - fix up email addresses and stuff
         $wikiname = getLoginName( $this, $cUID );
         if ($wikiname) {
@@ -294,9 +322,9 @@ sub getWikiName {
         }
     }
 
-    #print STDERR "--------------------------------------cUID : $cUID => $wikiname\n";
+#print STDERR "--------------------------------------cUID : $cUID => $wikiname\n";
     return $wikiname;
- 
+
 }
 
 =begin TML
@@ -309,26 +337,27 @@ or not is determined by the password manager.
 =cut
 
 sub userExists {
-    my( $this, $cUID ) = @_;
+    my ( $this, $cUID ) = @_;
     ASSERT($cUID) if DEBUG;
 
     # Do this to avoid a password manager lookup
     return 1 if $cUID eq $this->{session}->{user};
 
-    my $loginName = $this->getLoginName( $cUID );
-    return unless (defined($loginName) && ($loginName ne ''));
+    my $loginName = $this->getLoginName($cUID);
+    return unless ( defined($loginName) && ( $loginName ne '' ) );
 
-    if( $loginName eq $Foswiki::cfg{DefaultUserLogin} ) {
+    if ( $loginName eq $Foswiki::cfg{DefaultUserLogin} ) {
         return $loginName;
     }
 
-    if( $this->isGroup( $loginName )) {
+    if ( $this->isGroup($loginName) ) {
         return $loginName;
     }
 
     # Look them up in the password manager (can be slow).
-    if( $this->{passwords}->canFetchUsers() &&
-       $this->{passwords}->fetchPass( $loginName )) {
+    if (   $this->{passwords}->canFetchUsers()
+        && $this->{passwords}->fetchPass($loginName) )
+    {
         return $loginName;
     }
 
@@ -345,7 +374,7 @@ method in that module for details.
 =cut
 
 sub eachUser {
-    my( $this ) = @_;
+    my ($this) = @_;
 
     return $this->{passwords}->fetchUsers();
 }
@@ -363,7 +392,7 @@ If it doesn't, then the user mapping manager is asked instead.
 =cut
 
 sub findUserByEmail {
-    my( $this, $email ) = @_;
+    my ( $this, $email ) = @_;
     ASSERT($email) if DEBUG;
 
     return $this->{passwords}->findUserByEmail($email);
@@ -384,31 +413,36 @@ Duplicates are removed from the list.
 =cut
 
 sub getEmails {
-    my( $this, $user, $seen ) = @_;
-
+    my ( $this, $user, $seen ) = @_;
 
     $seen ||= {};
 
     my %emails = ();
 
-    if ($seen->{$user}) {
-      #print STDERR "preventing infinit recursion in getEmails($user)\n";
-    } else {
-      $seen->{$user} = 1;
+    if ( $seen->{$user} ) {
 
-      if ( $this->isGroup($user) ) {
-          my $it = $this->eachGroupMember( $user );
-          while( $it->hasNext() ) {
-              foreach ($this->getEmails( $it->next(), $seen )) {
-                  $emails{$_} = 1;
-              }
-          }
-      } else {
-          # get emails from the password manager
-          foreach ($this->{passwords}->getEmails( $this->getLoginName( $user ), $seen )) {
-              $emails{$_} = 1;
-          }
-      }
+        #print STDERR "preventing infinit recursion in getEmails($user)\n";
+    }
+    else {
+        $seen->{$user} = 1;
+
+        if ( $this->isGroup($user) ) {
+            my $it = $this->eachGroupMember($user);
+            while ( $it->hasNext() ) {
+                foreach ( $this->getEmails( $it->next(), $seen ) ) {
+                    $emails{$_} = 1;
+                }
+            }
+        }
+        else {
+
+            # get emails from the password manager
+            foreach ( $this->{passwords}
+                ->getEmails( $this->getLoginName($user), $seen ) )
+            {
+                $emails{$_} = 1;
+            }
+        }
     }
 
     return keys %emails;
@@ -428,7 +462,7 @@ sub setEmails {
     my $this = shift;
     my $user = shift;
 
-    $this->{passwords}->setEmails( $this->getLoginName( $user ), @_ );
+    $this->{passwords}->setEmails( $this->getLoginName($user), @_ );
 }
 
 =begin TML
@@ -443,29 +477,35 @@ to avoid reading .htpasswd when checking group memberships).
 =cut
 
 sub findUserByWikiName {
-    my( $this, $wn, $skipExistanceCheck ) = @_;
+    my ( $this, $wn, $skipExistanceCheck ) = @_;
     my @users = ();
 
-    if( $this->isGroup( $wn )) {
-        push( @users, $wn);
-    } elsif( $Foswiki::cfg{Register}{AllowLoginName} ) {
+    if ( $this->isGroup($wn) ) {
+        push( @users, $wn );
+    }
+    elsif ( $Foswiki::cfg{Register}{AllowLoginName} ) {
+
         # Add additional mappings defined in WikiUsers
-        
-        my @usernames = $this->{passwords}->listMatchingUsers($Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField}, $wn);
+
+        my @usernames =
+          $this->{passwords}->listMatchingUsers(
+            $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField}, $wn );
         push( @users, @usernames );
-        
+
         # Bloody compatibility!
         # The wikiname is always a registered user for the purposes of this
         # mapping. We have to do this because foswiki defines access controls
         # in terms of mapped users, and if a wikiname is *missing* from the
         # mapping there is "no such user".
-#HUH?        push( @users, getCanonicalUserID( $this, $wn ));
-    } else {
+        #HUH?        push( @users, getCanonicalUserID( $this, $wn ));
+    }
+    else {
+
         # The wikiname is also the login name, so we can just convert
         # it directly to a cUID
         my $cUID = getCanonicalUserID( $this, $wn );
-        if( $skipExistanceCheck || ($cUID && $this->userExists( $cUID )) ) {
-            push( @users, getCanonicalUserID( $this, $wn ));
+        if ( $skipExistanceCheck || ( $cUID && $this->userExists($cUID) ) ) {
+            push( @users, getCanonicalUserID( $this, $wn ) );
         }
     }
     return \@users;
@@ -482,7 +522,7 @@ Returns 1 on success, undef on failure.
 =cut
 
 sub checkPassword {
-    my( $this, $userName, $pw ) = @_;
+    my ( $this, $userName, $pw ) = @_;
 
     return $this->{passwords}->checkPassword( $userName, $pw );
 }
@@ -504,10 +544,10 @@ Otherwise returns 1 on success, undef on failure.
 =cut
 
 sub setPassword {
-    my( $this, $user, $newPassU, $oldPassU ) = @_;
+    my ( $this, $user, $newPassU, $oldPassU ) = @_;
 
-    return $this->{passwords}->setPassword(
-        $this->getLoginName( $user ), $newPassU, $oldPassU);
+    return $this->{passwords}
+      ->setPassword( $this->getLoginName($user), $newPassU, $oldPassU );
 }
 
 =begin TML
@@ -522,15 +562,12 @@ returns undef if no error
 =cut
 
 sub passwordError {
-    my( $this ) = @_;
+    my ($this) = @_;
     return $this->{passwords}->error();
 }
 
-
-
-
 #######################################################################
-# don't create or use the MAIN.WikiUsers topic 
+# don't create or use the MAIN.WikiUsers topic
 # this is a copy of the functionality in TopicUserMapping, with the WikiUser topic part removed
 #TODO: shame that its the UI::Registration code that creates the User topic - tahts close to pointless too
 
@@ -542,31 +579,38 @@ sub addUser {
     # SMELL: really ought to be smarter about this e.g. make a wikiword
     $wikiname ||= $login;
 
-    if( $this->{passwords}->fetchPass( $login )) {
+    if ( $this->{passwords}->fetchPass($login) ) {
+
         # They exist; their password must match
-        unless( $this->{passwords}->checkPassword( $login, $password )) {
+        unless ( $this->{passwords}->checkPassword( $login, $password ) ) {
             throw Error::Simple(
                 'New password did not match existing password for this user');
         }
+
         # User exists, and the password was good.
-    } else {
+    }
+    else {
+
         # add a new user
 
-        unless( defined( $password )) {
+        unless ( defined($password) ) {
             require Foswiki::Users;
             $password = Foswiki::Users::randomPassword();
         }
 
-        unless( $this->{passwords}->setPassword( $login, $password )) {
-            #print STDERR "\n Failed to add user:  ".$this->{passwords}->error();
+        unless ( $this->{passwords}->setPassword( $login, $password ) ) {
+
+           #print STDERR "\n Failed to add user:  ".$this->{passwords}->error();
             throw Error::Simple(
-                'Failed to add user: '.$this->{passwords}->error());
+                'Failed to add user: ' . $this->{passwords}->error() );
         }
-        
-        if( !$Foswiki::cfg{Register}{AllowLoginName} ) {
+
+        if ( !$Foswiki::cfg{Register}{AllowLoginName} ) {
             $wikiname = $login;
         }
-        $this->{passwords}->setField($login, $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField}, $wikiname);
+        $this->{passwords}->setField( $login,
+            $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField}, $wikiname );
+
 #	    $wikiname = $this->{passwords}->fetchField($cUID, $Foswiki::cfg{HTTPDUserAdminContrib}{WikiNameField});
 
     }
@@ -574,14 +618,12 @@ sub addUser {
     my $user = getCanonicalUserID( $this, $login, 1 );
     ASSERT($user) if DEBUG;
 
-    #can't call setEmails here - user may be in the process of being registered
-    #TODO; when registration is moved into the mapping, setEmails will happend after the createUserTOpic
-    #$this->setEmails( $user, $emails );
+#can't call setEmails here - user may be in the process of being registered
+#TODO; when registration is moved into the mapping, setEmails will happend after the createUserTOpic
+#$this->setEmails( $user, $emails );
 
     return $user;
 }
-
-
 
 #######################################################################
 # Groups functionality
@@ -596,40 +638,44 @@ method in that module for details.
 =cut
 
 sub eachGroupMember {
-    my $this = shift;
+    my $this  = shift;
     my $group = shift;
-    
-    return $this->SUPER::eachGroupMember($group) unless (defined($this->{groupDatabase}));
-    
+
+    return $this->SUPER::eachGroupMember($group)
+      unless ( defined( $this->{groupDatabase} ) );
+
     my @users = $this->{groupDatabase}->list($group);
     my @cuids;
     foreach my $ident (@users) {
-        if ($this->isGroup($ident)) {
+        if ( $this->isGroup($ident) ) {
             my $it = $this->eachGroupMember($ident);
             while ( $it->hasNext() ) {
                 push( @cuids, $it->next() );
             }
-        } else {
+        }
+        else {
+
             #explicitly convert to cUIDs
-            my $cuid = $this->getCanonicalUserID($ident);	#login
-		if (defined($cuid)) {
-	            push(@cuids, $cuid);
-			#print STDERR "pushing $cuid ($ident) onto groupmembers for $group\n";
-		} else {
-			my $users = $this->findUserByWikiName($ident);
-			foreach my $ident (@$users) {
-		            push(@cuids, $ident );
-				#print STDERR "pushing $ident onto groupmembers for $group\n";
-			}
-		}
+            my $cuid = $this->getCanonicalUserID($ident);    #login
+            if ( defined($cuid) ) {
+                push( @cuids, $cuid );
+
+          #print STDERR "pushing $cuid ($ident) onto groupmembers for $group\n";
+            }
+            else {
+                my $users = $this->findUserByWikiName($ident);
+                foreach my $ident (@$users) {
+                    push( @cuids, $ident );
+
+                  #print STDERR "pushing $ident onto groupmembers for $group\n";
+                }
+            }
         }
     }
-    
+
     require Foswiki::ListIterator;
-    return new Foswiki::ListIterator(\@cuids);
+    return new Foswiki::ListIterator( \@cuids );
 }
-
-
 
 =begin TML
 
@@ -641,9 +687,10 @@ method in that module for details.
 =cut
 
 sub isGroup {
-    my ($this, $user) = @_;
+    my ( $this, $user ) = @_;
 
-    return $this->SUPER::isGroup($user) unless (defined($this->{groupDatabase}));
+    return $this->SUPER::isGroup($user)
+      unless ( defined( $this->{groupDatabase} ) );
 
     # Groups have the same username as wikiname as canonical name
     return 1 if $user eq $Foswiki::cfg{SuperAdminGroup};
@@ -661,16 +708,16 @@ method in that module for details.
 =cut
 
 sub eachGroup {
-    my ( $this ) = @_;
-    
-    return $this->SUPER::eachGroup() unless (defined($this->{groupDatabase}));
+    my ($this) = @_;
+
+    return $this->SUPER::eachGroup()
+      unless ( defined( $this->{groupDatabase} ) );
 
     my @groups = $this->{groupDatabase}->list();
 
     require Foswiki::ListIterator;
     return new Foswiki::ListIterator( \@groups );
 }
-
 
 =begin TML
 
@@ -682,18 +729,19 @@ method in that module for details.
 =cut
 
 sub eachMembership {
-    my ($this, $user) = @_;
-    
-    return $this->SUPER::eachMembership($user) unless (defined($this->{groupDatabase}));
+    my ( $this, $user ) = @_;
+
+    return $this->SUPER::eachMembership($user)
+      unless ( defined( $this->{groupDatabase} ) );
 
     my $it = $this->eachGroup();
     $it->{filter} = sub {
+
         #print STDERR "----- is $user in the $_[0] group?";
-        $this->isInGroup($user, $_[0]);
+        $this->isInGroup( $user, $_[0] );
     };
     return $it;
 }
-
 
 =begin TML
 
@@ -706,9 +754,9 @@ implemented using topic VIEW permissions
 =cut
 
 sub groupAllowsView {
-    my $this = shift;
+    my $this  = shift;
     my $Group = shift;
-    
+
     my $user = $this->{session}->{user};
     return 1 if $this->{session}->{users}->isAdmin($user);
 
@@ -727,9 +775,9 @@ implemented using topic CHANGE permissions
 =cut
 
 sub groupAllowsChange {
-    my $this = shift;
+    my $this  = shift;
     my $Group = shift;
-    
+
     my $user = $this->{session}->{user};
     return 1 if $this->{session}->{users}->isAdmin($user);
 
@@ -751,8 +799,8 @@ sub addUserToGroup {
     my ( $this, $cuid, $Group, $create ) = @_;
     $Group = Foswiki::Sandbox::untaint( $Group,
         \&Foswiki::Sandbox::validateTopicName );
-    return 0 unless ($this->groupAllowsChange($Group));
-    
+    return 0 unless ( $this->groupAllowsChange($Group) );
+
     my $user = $this->{session}->{user};
 
 #run this as calling user, if the registration is being run by an existing user
@@ -769,16 +817,13 @@ sub addUserToGroup {
             $Foswiki::cfg{Register}{RegistrationAgentWikiName} );
     }
 
-    if (
-        $usersObj->isGroup($Group) || $create
-      )
-    {
+    if ( $usersObj->isGroup($Group) || $create ) {
         if ( $usersObj->isInGroup( $cuid, $Group ) ) {
 
 #TODO: not sure this is the right thing to do - it might make more sense to not expand the nested groups, and add a user if they're not listed here, that way we are able to not worry about subgroups changing.
             return 1;    #user already in group, nothing to do
         }
-	return $this->{groupDatabase}->add($cuid, $Group);
+        return $this->{groupDatabase}->add( $cuid, $Group );
     }
     die 'not sure how we got here';
 }
@@ -794,8 +839,8 @@ sub removeUserFromGroup {
     $Group = Foswiki::Sandbox::untaint( $Group,
         \&Foswiki::Sandbox::validateTopicName );
 
-    return unless ($this->groupAllowsChange($Group));
-    
+    return unless ( $this->groupAllowsChange($Group) );
+
     my $user = $this->{session}->{user};
 
 #run this as calling user, if the registration is being run by an existing user
@@ -803,17 +848,13 @@ sub removeUserFromGroup {
 #TODO: extract this to the rego code - as we really should only allow magical group adding in specific circumstances? (or is this a pointless oddity, as any user can 'just' register a sock puppet, and then...?
     my $usersObj = $this->{session}->{users};
 
-    if (
-        $usersObj->isGroup($Group)
-      )
-    {
+    if ( $usersObj->isGroup($Group) ) {
         if ( $usersObj->isInGroup( $cuid, $Group ) ) {
-    	return $this->{groupDatabase}->delete($cuid, $Group);
+            return $this->{groupDatabase}->delete( $cuid, $Group );
         }
     }
     return 0;
 }
-
 
 =begin TML
 
@@ -826,20 +867,20 @@ True if the user is an admin
 =cut
 
 sub DONTNEEDTHIS_isAdmin {
-    my( $this, $user ) = @_;
+    my ( $this, $user ) = @_;
     my $isAdmin = 0;
 
     #TODO: this might not apply now that we have BaseUserMapping - test
-    if ($user eq $Foswiki::cfg{SuperAdminGroup}) {
+    if ( $user eq $Foswiki::cfg{SuperAdminGroup} ) {
         $isAdmin = 1;
-    } else {
+    }
+    else {
         my $sag = $Foswiki::cfg{SuperAdminGroup};
         $isAdmin = $this->isInGroup( $user, $sag );
     }
 
     return $isAdmin;
 }
-
 
 =begin TML
 
@@ -851,102 +892,123 @@ method in that module for details.
 =cut
 
 sub isInGroup {
-    my( $this, $user, $group, $scanning ) = @_;
+    my ( $this, $user, $group, $scanning ) = @_;
     ASSERT($user) if DEBUG;
-    
-    return $this->SUPER::isInGroup($user, $group, $scanning) unless (defined($this->{groupDatabase}));
-    
-    return 1 if ($this->{groupDatabase}->exists($group, $user));
+
+    return $this->SUPER::isInGroup( $user, $group, $scanning )
+      unless ( defined( $this->{groupDatabase} ) );
+
+    return 1 if ( $this->{groupDatabase}->exists( $group, $user ) );
     my $wikiname = $this->getWikiName($user);
-    return 1 if (defined($wikiname) and ($this->{groupDatabase}->exists($group, $wikiname )));
-    
+    return 1
+      if ( defined($wikiname)
+        and ( $this->{groupDatabase}->exists( $group, $wikiname ) ) );
+
     #now for nested groups :/
     my $it = $this->eachGroupMember($group);
     while ( $it->hasNext() ) {
-        return 1 if ($user eq $it->next());
+        return 1 if ( $user eq $it->next() );
     }
 }
 
 sub USERLIST {
-    my($session, $params, $aTopic, $aWeb) = @_;  
-    
-    return '%RED%USERLIST only evaluated for Admin Users%ENDCOLOR%' unless (Foswiki::Func::isAnAdmin());
+    my ( $session, $params, $aTopic, $aWeb ) = @_;
+
+    return '%RED%USERLIST only evaluated for Admin Users%ENDCOLOR%'
+      unless ( Foswiki::Func::isAnAdmin() );
 
     require Digest::MD5;
-    my $string_id = join(':', map { $_.'="'.$params->{$_}.'"' } keys(%$params));
-    my $paging_ID = 'USERINFO'.Digest::MD5::md5_hex($string_id);
-    
+    my $string_id =
+      join( ':', map { $_ . '="' . $params->{$_} . '"' } keys(%$params) );
+    my $paging_ID = 'USERINFO' . Digest::MD5::md5_hex($string_id);
+
     my $this = $session->{users};
-    my $format = $params->{format} || $params->{_DEFAULT} || '   * $wikiname - $username - ';
-    my $pagesize = $params->{pagesize} ||10;
-    my $showpage = $session->{request}->param($paging_ID) || $params->{showpage} || 1;
-    my $header = $params->{header} || '';
-    my $footer = $params->{footer} || '';
+    my $format =
+         $params->{format}
+      || $params->{_DEFAULT}
+      || '   * $wikiname - $username - ';
+    my $pagesize = $params->{pagesize} || 10;
+    my $showpage =
+         $session->{request}->param($paging_ID)
+      || $params->{showpage}
+      || 1;
+    my $header    = $params->{header}    || '';
+    my $footer    = $params->{footer}    || '';
     my $separator = $params->{separator} || '$n';
-    #exclude these wikinames... 
-    my @exclusions = split(/\s*,\s*/, $params->{exclude} || '');
-    
+
+    #exclude these wikinames...
+    my @exclusions = split( /\s*,\s*/, $params->{exclude} || '' );
+
     my $it = $this->eachUser();
     my @results;
-    my $idx = 0;
-    my $startidx = ($showpage-1)*$pagesize;
-    my $stopidx = ($showpage)*$pagesize;
-    my ($nextidx, $previousidx); #undefined means no nav's needed
-    while ($it->hasNext()) {
+    my $idx      = 0;
+    my $startidx = ( $showpage - 1 ) * $pagesize;
+    my $stopidx  = ($showpage) * $pagesize;
+    my ( $nextidx, $previousidx );    #undefined means no nav's needed
+    while ( $it->hasNext() ) {
         my $cuid = $it->next();
-        
+
         my $wikiname = $this->getWikiName($cuid);
-        next if (@exclusions ~~ $wikiname);                     #TODO: eeeeek perl 5.10ism
-        if ($idx >= $startidx) {
-            if ($idx >= $stopidx) {
-                $nextidx = $idx; #there is a next element that isn't excluded.
+        next if ( @exclusions ~~ $wikiname );    #TODO: eeeeek perl 5.10ism
+        if ( $idx >= $startidx ) {
+            if ( $idx >= $stopidx ) {
+                $nextidx = $idx;   #there is a next element that isn't excluded.
                 last;
             }
             my $login = $this->getLoginName($cuid);
+
             #my $result = '%USERINFO{"'.$login.'" format="'.$format.'"}%';
-            my $result = $session->USERINFO({
-                                                                _DEFAULT => $login,
-                                                                format => $format
-                                                                    });
-            push(@results, $result);
-        }  else {
-            $previousidx = $idx; #there is a non-excluded previous element
+            my $result = $session->USERINFO(
+                {
+                    _DEFAULT => $login,
+                    format   => $format
+                }
+            );
+            push( @results, $result );
+        }
+        else {
+            $previousidx = $idx;    #there is a non-excluded previous element
         }
         $idx++;
     }
-    my $result = $header.join($separator, @results).$footer;
-    
-    my $previouspage = '';
+    my $result = $header . join( $separator, @results ) . $footer;
+
+    my $previouspage    = '';
     my $previouspageurl = '';
-    if (defined($previousidx)) {
-        #TODO: need to rebuild the URL from the incoming, and 'modify/set' the paging_ID's value..
-        $previouspageurl = Foswiki::Func::getScriptUrl($aWeb, $aTopic, 'view', $paging_ID => ($showpage-1));
+    if ( defined($previousidx) ) {
+
+#TODO: need to rebuild the URL from the incoming, and 'modify/set' the paging_ID's value..
+        $previouspageurl =
+          Foswiki::Func::getScriptUrl( $aWeb, $aTopic, 'view',
+            $paging_ID => ( $showpage - 1 ) );
         $previouspage = "[[$previouspageurl][<]]";
     }
-    my $nextpage = '';
+    my $nextpage    = '';
     my $nextpageurl = '';
-    if (defined($nextidx)) {
-        #TODO: need to rebuild the URL from the incoming, and 'modify/set' the paging_ID's value..
-        $nextpageurl = Foswiki::Func::getScriptUrl($aWeb, $aTopic, 'view', $paging_ID => ($showpage+1));
+    if ( defined($nextidx) ) {
+
+#TODO: need to rebuild the URL from the incoming, and 'modify/set' the paging_ID's value..
+        $nextpageurl =
+          Foswiki::Func::getScriptUrl( $aWeb, $aTopic, 'view',
+            $paging_ID => ( $showpage + 1 ) );
         $nextpage = "[[$nextpageurl][>]]";
     }
-    
+
     $result =~ s/\$pagenumber/$showpage/ge;
     $result =~ s/\$previouspagenumber/($showpage-1)/ge;
     $result =~ s/\$nextpagenumber/($showpage+1)/ge;
 
     $result =~ s/\$previouspageurl/$previouspageurl/ge;
     $result =~ s/\$nextpageurl/$nextpageurl/ge;
-    
+
     $result =~ s/\$previouspage/$previouspage/ge;
     $result =~ s/\$nextpage/$nextpage/ge;
-    
+
     $result =~ s/\$sep/$separator/ge;
 
     $result = Foswiki::expandStandardEscapes($result);
-   
+
     return $result;
 }
-
 
 1;
