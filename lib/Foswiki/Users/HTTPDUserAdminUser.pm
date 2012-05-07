@@ -1,8 +1,8 @@
 # Module of Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
 # Copyright (C) 2007-2009 SvenDowideit@foswiki.com
-# All Rights Reserved.
-# Foswiki Contributors are listed in the AUTHORS file in the root of
+# All Rights Reserved. 
+# Foswiki Contributors are listed in the AUTHORS file in the root of 
 # this distribution. NOTE: Please extend that file, not this notice.
 #
 # This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@ use Foswiki::Users::Password;
 our @ISA = qw( Foswiki::Users::Password );
 
 use HTTPD::UserAdmin ();
-use HTTPD::Authen    ();
+use HTTPD::Authen ();
 use Assert;
 use strict;
 use Foswiki::Users::Password;
@@ -45,84 +45,70 @@ see http://search.cpan.org/~lds/HTTPD-User-Manage-1.66/lib/HTTPD/UserAdmin.pm
 
 =cut
 
-my @datafields = ( 'emails', 'wikiname' );
+my @datafields = ('emails', 'wikiname');
 
 sub new {
-    my ( $class, $session ) = @_;
+    my( $class, $session ) = @_;
 
-    my $this = $class->SUPER::new($session);
+    my $this = $class->SUPER::new( $session );
 
-    my %configuration = (
-        DBType => $Foswiki::cfg{HTTPDUserAdminContrib}{DBType}
-          || 'Text',
-        Host => $Foswiki::cfg{HTTPDUserAdminContrib}{Host}
-          || '',
-        Port => $Foswiki::cfg{HTTPDUserAdminContrib}{Port}
-          || '',
-        DB => $Foswiki::cfg{HTTPDUserAdminContrib}{DB}
-          || $Foswiki::cfg{Htpasswd}{FileName},
+	my %configuration =  (
+			DBType =>					$Foswiki::cfg{HTTPDUserAdminContrib}{DBType} || 'Text',
+			Host =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Host} || '',
+			Port =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Port} || '',
+			DB =>						$Foswiki::cfg{HTTPDUserAdminContrib}{DB} || $Foswiki::cfg{Htpasswd}{FileName},
+			#uncommenting User seems to crash when using Text DBType :(
+			#User =>						$Foswiki::cfg{HTTPDUserAdminContrib}{User},
+			Auth =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Auth} || '',
+			Encrypt =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Encrypt} || 'crypt',
+			Locking =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Locking} || '',
+			Path =>						$Foswiki::cfg{HTTPDUserAdminContrib}{Path} || '',
+			Debug =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Debug},
+			Flags =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Flags} || '',
+			Driver =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Driver} || '',
+			Server =>					$Foswiki::cfg{HTTPDUserAdminContrib}{Server},	#undef == go detect
+			UserTable =>				$Foswiki::cfg{HTTPDUserAdminContrib}{UserTable} || '',
+			NameField =>				$Foswiki::cfg{HTTPDUserAdminContrib}{NameField} || '',
+			PasswordField =>			$Foswiki::cfg{HTTPDUserAdminContrib}{PasswordField} || '',
+			#Debug =>				1
+             );
 
-        #uncommenting User seems to crash when using Text DBType :(
-        #User =>						$Foswiki::cfg{HTTPDUserAdminContrib}{User},
-        Auth    => $Foswiki::cfg{HTTPDUserAdminContrib}{Auth}    || '',
-        Encrypt => $Foswiki::cfg{HTTPDUserAdminContrib}{Encrypt} || 'crypt',
-        Locking => $Foswiki::cfg{HTTPDUserAdminContrib}{Locking} || '',
-        Path    => $Foswiki::cfg{HTTPDUserAdminContrib}{Path}    || '',
-        Debug   => $Foswiki::cfg{HTTPDUserAdminContrib}{Debug},
-        Flags   => $Foswiki::cfg{HTTPDUserAdminContrib}{Flags}   || '',
-        Driver  => $Foswiki::cfg{HTTPDUserAdminContrib}{Driver}  || '',
-        Server =>
-          $Foswiki::cfg{HTTPDUserAdminContrib}{Server},    #undef == go detect
-        UserTable => $Foswiki::cfg{HTTPDUserAdminContrib}{UserTable}
-          || '',
-        NameField => $Foswiki::cfg{HTTPDUserAdminContrib}{NameField}
-          || '',
-        PasswordField => $Foswiki::cfg{HTTPDUserAdminContrib}{PasswordField}
-          || '',
-
-        #Debug =>				1
-    );
-
-    $this->{configuration} = \%configuration;
+	$this->{configuration} = \%configuration;
 
     $this->{userDatabase} = new HTTPD::UserAdmin(%configuration);
 
 #	print STDERR "new HTTPDAuth".join(', ', $this->{userDatabase}->list())."\n" if ($Foswiki::cfg{HTTPDUserAdminContrib}{Debug});
-
+    
     return $this;
 }
 
 #add func to HTTPD::UserAdmin::SQL so i can ask for a list of users by fields..
 #else do it the long way
 sub listMatchingUsers {
-    my ( $this, $field, $value ) = @_;
-    my $self = $this->{userDatabase};
-    my @list;
-
-    if ( $Foswiki::cfg{HTTPDUserAdminContrib}{DBType} eq 'SQL' ) {
-        my $statement = sprintf(
-            "SELECT %s from %s WHERE %s = '%s'\n",
-            @{$self}{qw(NAMEFIELD USERTABLE)},
-            $field, $value
-        );
-        print STDERR $statement if $self->debug;
-        my $sth = $self->{'_DBH'}->prepare($statement);
-        Carp::carp("Cannot prepare sth ($DBI::err): $DBI::errstr")
-          unless $sth;
-        $sth->execute || Carp::croak($DBI::errstr);
-        my $user;
-        while ( $user = $sth->fetchrow ) {
-            push( @list, $user );
-        }
-        $sth->finish;
-    }
-    else {
-        my @userlist = $this->{userDatabase}->list();
-        foreach my $user (@userlist) {
-            my $userValue = fetchField( $this, $user, $field );
-            push( @list, $user )
-              if ( defined($userValue) and ( $userValue eq $value ) );
-        }
+        my($this, $field, $value) = @_;
+        my $self = $this->{userDatabase};
+        my @list;
+        
+        if ($Foswiki::cfg{HTTPDUserAdminContrib}{DBType} eq 'SQL') {
+	    my $statement = 
+		sprintf("SELECT %s from %s WHERE %s = '%s'\n",
+			@{$self}{qw(NAMEFIELD USERTABLE)}, $field, $value);
+	    print STDERR $statement if $self->debug;
+	    my $sth = $self->{'_DBH'}->prepare($statement);
+	    Carp::carp("Cannot prepare sth ($DBI::err): $DBI::errstr")
+		unless $sth;
+	    $sth->execute || Carp::croak($DBI::errstr);
+	    my $user;
+	    while($user = $sth->fetchrow) {
+		push(@list, $user);
+	    }
+	    $sth->finish;
+    } else {
+	    my @userlist = $this->{userDatabase}->list();
+	    foreach my $user (@userlist) {
+		    my $userValue = fetchField($this, $user, $field);
+		    push(@list, $user) if (defined($userValue) and ($userValue eq $value));
+	    }
     }
     return @list;
 }
@@ -140,7 +126,6 @@ Break circular references.
 sub finish {
     my $this = shift;
     $this->SUPER::finish();
-
 #don't do this - we don't want to write the .htpasswd file every time we open it for reading.
 #    $this->{userDatabase}->commit();
     undef $this->{userDatabase};
@@ -157,19 +142,15 @@ returns true if the password file is not currently modifyable
 sub readOnly {
     my $this = shift;
 
-    if ( $this->{configuration}->{DBType} eq 'SQL' ) {
-    }
-    else {
-
+    if ($this->{configuration}->{DBType} eq 'SQL') {
+    } else {
         #file based
         my $path = $this->{configuration}->{DB};
-        if ( -e $path && -d $path && !-w $path ) {
-
+        if (-e $path && -d $path && !-w $path) {
             #if the file has been set to non-writable
             return 1;
-        }
+        }      
     }
-
     #TODO: use the flags...
 
     $this->{session}->enterContext('passwords_modifyable');
@@ -179,47 +160,44 @@ sub readOnly {
 sub canFetchUsers {
     return 1;
 }
-
 sub fetchUsers {
-    my $this  = shift;
+    my $this = shift;
     my @users = $this->{userDatabase}->list();
     require Foswiki::ListIterator;
-    return new Foswiki::ListIterator( \@users );
+    return new Foswiki::ListIterator(\@users);
 }
 
 sub fetchPass {
-    my ( $this, $login ) = @_;
-    ASSERT($login) if DEBUG;
-
+    my( $this, $login ) = @_;
+    ASSERT( $login ) if DEBUG;
+    
     my $r;
-    if ( $this->{userDatabase}->exists($login) ) {
-        $r = $this->{userDatabase}->password($login);
-        $this->{error} = undef;
+    if ($this->{userDatabase}->exists( $login )) {
+	$r = $this->{userDatabase}->password( $login );
+	$this->{error} = undef;
     }
     return $r;
 }
 
 sub checkPassword {
     my ( $this, $login, $password ) = @_;
-
-    #TODO: this should be extracted to a new LoginManager i think
-    my $authen = new HTTPD::Authen( $this->{configuration} );
-    return $authen->check( $login, $password );
+	
+	#TODO: this should be extracted to a new LoginManager i think
+	my $authen = new HTTPD::Authen($this->{configuration});
+	return $authen->check($login, $password);
 }
 
 sub removeUser {
-    my ( $this, $login ) = @_;
-    ASSERT($login) if DEBUG;
+    my( $this, $login ) = @_;
+    ASSERT( $login ) if DEBUG;
 
     $this->{error} = undef;
     my $r;
     try {
-        $r = $this->{userDatabase}->delete($login);
-
-        #$this->{error} = $this->{apache}->error() unless (defined($r));
-        $this->{userDatabase}->commit();
-    }
-    catch Error::Simple with {
+        $r = $this->{userDatabase}->delete( $login );
+        #$this->{error} = $this->{apache}->error() unless (defined($r));        
+	$this->{userDatabase}->commit();
+    } catch Error::Simple with {
         $this->{error} = 'problem deleting user';
     };
     return $r;
@@ -242,17 +220,17 @@ Otherwise returns 1 on success, undef on failure.
 =cut
 
 sub setPassword {
-    my ( $this, $login, $newPassU, $oldPassU ) = @_;
-    ASSERT($login) if DEBUG;
+    my( $this, $login, $newPassU, $oldPassU ) = @_;
+    ASSERT( $login ) if DEBUG;
 
-    if ( defined($oldPassU) ) {
-        if ( $oldPassU != 1 ) {
+    if( defined($oldPassU)) {
+        if ($oldPassU != 1) {
             my $ok = 0;
             try {
                 $ok = $this->checkPassword( $login, $oldPassU );
-            }
-            catch Error::Simple with {};
-            unless ($ok) {
+            } catch Error::Simple with {
+            };
+            unless( $ok ) {
                 $this->{error} = "Wrong password";
                 return 0;
             }
@@ -261,20 +239,16 @@ sub setPassword {
 
     my $added = 0;
     try {
-        if ( $this->{userDatabase}->exists($login) ) {
-
+        if ($this->{userDatabase}->exists( $login) ) {
             #$added = $this->{userDatabase}->update( $login, $newPassU );
-            my $settings = $this->{userDatabase}->fetch( $login, @datafields );
-            $added =
-              $this->{userDatabase}->update( $login, $newPassU, $settings );
-        }
-        else {
+	    my $settings = $this->{userDatabase}->fetch($login, @datafields);
+	    $added = $this->{userDatabase}->update($login, $newPassU, $settings);
+        } else {
             $added = $this->{userDatabase}->add( $login, $newPassU );
         }
-        $this->{userDatabase}->commit();
+	$this->{userDatabase}->commit();
         $this->{error} = undef;
-    }
-    catch Error::Simple with {
+    } catch Error::Simple with {
         $this->{error} = 'problem changing password';
     };
 
@@ -292,55 +266,49 @@ sub isManagingEmails {
 
 #special accessors for HTTPDUserAdminUserMapping
 sub fetchField {
-    my ( $this, $login, $fieldname ) = @_;
-    return unless ( $this->{userDatabase}->exists($login) );
-
-    #my $settings = $this->{userDatabase}->get_fields(-user=>$login);
-    my $settings = $this->{userDatabase}->fetch( $login, ($fieldname) );
-
-#use Data::Dumper;
-#print STDERR "\nsettings . ".$settings." ..".Dumper($settings, keys(%{$settings}));
-
-    return $settings->{$fieldname};
+    my( $this, $login, $fieldname) = @_;
+	return unless ($this->{userDatabase}->exists($login));
+	#my $settings = $this->{userDatabase}->get_fields(-user=>$login);
+	my $settings = $this->{userDatabase}->fetch($login, ($fieldname));	
+	#use Data::Dumper;
+	#print STDERR "\nsettings . ".$settings." ..".Dumper($settings, keys(%{$settings}));
+	
+	return $settings->{$fieldname};
 }
-
 sub setField {
-    my ( $this, $login, $fieldname, $value ) = @_;
-    return unless ( $this->{userDatabase}->exists($login) );
-
-  #my $r = $this->{userDatabase}->update($login, undef,  {$fieldname=>$value} );
-    my $settings = $this->{userDatabase}->fetch( $login, @datafields );
+    my( $this, $login, $fieldname, $value) = @_;
+	return unless ($this->{userDatabase}->exists($login));
+    #my $r = $this->{userDatabase}->update($login, undef,  {$fieldname=>$value} );
+    	    my $settings = $this->{userDatabase}->fetch($login, @datafields);
     $settings->{$fieldname} = $value;
-    $this->{userDatabase}->update( $login, undef, $settings );
+    $this->{userDatabase}->update($login, undef, $settings);
 
     $this->{userDatabase}->commit();
-    return $value;
+	return $value;
 }
 
 # emails are stored in extra info field as a ; separated list
 sub getEmails {
-    my ( $this, $login ) = @_;
-    return unless ( $this->{userDatabase}->exists($login) );
-    my $setting = fetchField( $this, $login, 'emails' ) || '';
-
-    my @r = split( /;/, $setting );
+    my( $this, $login) = @_;
+	return unless ($this->{userDatabase}->exists($login));
+	my $setting = fetchField($this, $login, 'emails') || '';
+	
+    my @r = split(/;/, $setting);
     $this->{error} = undef;
     return @r;
 }
-
 sub setEmails {
-    my $this  = shift;
+    my $this = shift;
     my $login = shift;
-    my $r     = setField( $this, $login, 'emails', join( ';', @_ ) );
-    $this->{error} = undef;
+    my $r = setField($this, $login, 'emails', join(';', @_) );
+    $this->{error} =  undef;
     return $r;
 }
-
 sub findUserByEmail {
-    my ( $this, $email ) = @_;
+    my( $this, $email ) = @_;
     ASSERT($email) if DEBUG;
-
-    return $this->listMatchingUsers( 'emails', $email );
+    
+    return $this->listMatchingUsers('emails', $email);
 }
 
 1;
